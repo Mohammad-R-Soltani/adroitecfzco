@@ -23,6 +23,11 @@ const nextConfig: NextConfig = {
         hostname: "www.apple.com",
         pathname: "/**",
       },
+      {
+      protocol: "https",
+      hostname: "commons.wikimedia.org",
+      pathname: "/**",
+      },
     ],
     unoptimized: true,
   },
