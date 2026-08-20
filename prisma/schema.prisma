@@ -1,0 +1,109 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+enum Role {
+  ADMIN
+  STAFF
+}
+
+enum BrandSlug {
+  apple
+  xiaomi
+}
+
+enum DeviceCategory {
+  PHONE
+  TABLET
+  LAPTOP
+  WATCH
+}
+
+model User {
+  id           String    @id @default(cuid())
+  username     String    @unique
+  passwordHash String
+  displayName  String
+  jobTitle     String?
+  phone        String?
+  email        String?
+  role         Role      @default(STAFF)
+  isActive     Boolean   @default(true)
+  createdAt    DateTime  @default(now())
+  lastLoginAt  DateTime?
+
+  bookmarks Bookmark[]
+}
+
+model Brand {
+  id       String    @id @default(cuid())
+  slug     BrandSlug @unique
+  name     String
+  accent   String
+  chipsets Chipset[]
+}
+
+model Chipset {
+  id            String   @id @default(cuid())
+  slug          String   @unique
+  brand         Brand    @relation(fields: [brandId], references: [id])
+  brandId       String
+  name          String
+  series        String
+  releaseYear   Int
+  processNode   String
+  cpuSummary    String
+  gpuSummary    String
+  npuSummary    String?
+  maxRam        String?
+  highlight     String
+  gradientFrom  String
+  gradientTo    String
+  sourceNote    String
+  geekbenchSingleCore Int?
+  geekbenchMultiCore  Int?
+  benchmarkNote       String?
+  featured      Boolean  @default(false)
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  devices   Device[]
+  bookmarks Bookmark[]
+
+  @@unique([brandId, name])
+}
+
+model Device {
+  id          String         @id @default(cuid())
+  slug        String         @unique
+  chipset     Chipset        @relation(fields: [chipsetId], references: [id])
+  chipsetId   String
+  name        String
+  category    DeviceCategory
+  releaseDate DateTime
+  region      String?
+
+  imageUrl             String?
+  imageWidth           Int?
+  imageHeight          Int?
+  imageAttributionText String?
+  imageAttributionUrl  String?
+  imageLicense         String?
+
+  @@unique([chipsetId, name])
+}
+
+model Bookmark {
+  id        String   @id @default(cuid())
+  user      User     @relation(fields: [userId], references: [id])
+  userId    String
+  chipset   Chipset  @relation(fields: [chipsetId], references: [id])
+  chipsetId String
+  createdAt DateTime @default(now())
+
+  @@unique([userId, chipsetId])
+}

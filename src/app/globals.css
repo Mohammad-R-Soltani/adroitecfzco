@@ -1,26 +1,168 @@
 @import "tailwindcss";
 
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  --ink: #0b1220;
+  --ink-soft: #566079;
+  --ink-faint: #8b93a7;
+  --paper: #ffffff;
+  --mist: #f1f5fb;
+  --line: #e1e8f2;
+  --signal: #0071e3;
+  --signal-deep: #0058b3;
+  --glow: #22d3ee;
+  --ember: #ff6900;
+  --background: var(--paper);
+  --foreground: var(--ink);
 }
 
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
+  --color-ink: var(--ink);
+  --color-ink-soft: var(--ink-soft);
+  --color-ink-faint: var(--ink-faint);
+  --color-mist: var(--mist);
+  --color-line: var(--line);
+  --color-signal: var(--signal);
+  --color-signal-deep: var(--signal-deep);
+  --color-glow: var(--glow);
+  --color-ember: var(--ember);
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+  --font-display: var(--font-display);
 }
 
 body {
-  background: var(--background);
   color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  background-color: var(--mist);
+  background-image:
+    radial-gradient(900px 520px at 12% -8%, rgba(0, 113, 227, 0.13), transparent 62%),
+    radial-gradient(760px 460px at 92% 4%, rgba(34, 211, 238, 0.12), transparent 58%),
+    radial-gradient(680px 480px at 68% 96%, rgba(255, 105, 0, 0.07), transparent 60%),
+    linear-gradient(rgba(11, 18, 32, 0.028) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(11, 18, 32, 0.028) 1px, transparent 1px);
+  background-size: 100% 100%, 100% 100%, 100% 100%, 44px 44px, 44px 44px;
+  background-attachment: fixed, fixed, fixed, fixed, fixed;
+}
+
+/* Silicon die-trace corner flourish for section headers */
+.trace-rule {
+  background-image: linear-gradient(
+    90deg,
+    var(--signal) 0 18px,
+    transparent 18px 26px,
+    var(--glow) 26px 34px,
+    transparent 34px
+  );
+}
+
+/* Every numeric / technical value in the app renders in mono — the app's
+   signature "component datasheet" treatment. */
+.spec-value {
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -0.01em;
+}
+
+.font-display {
+  font-family: var(--font-display);
+}
+
+/* Hide scrollbars on horizontal-scroll rails while keeping them scrollable */
+.rail {
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+.rail::-webkit-scrollbar {
+  display: none;
+}
+
+/* Drawer nav */
+@keyframes drawer-in {
+  from {
+    transform: translateX(-100%);
+  }
+  to {
+    transform: translateX(0);
+  }
+}
+@keyframes scrim-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+.drawer-panel {
+  animation: drawer-in 0.28s cubic-bezier(0.16, 1, 0.3, 1);
+}
+.drawer-scrim {
+  animation: scrim-in 0.28s ease-out;
+}
+
+@keyframes card-in {
+  from {
+    opacity: 0;
+    transform: translateY(14px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+.card-in {
+  animation: card-in 0.5s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+/* Slow moving sheen on featured-chip top accent bars */
+@keyframes chip-sheen-move {
+  from {
+    background-position: 0% 0%;
+  }
+  to {
+    background-position: 200% 0%;
+  }
+}
+.chip-sheen {
+  background-size: 200% 100%;
+  animation: chip-sheen-move 3.2s linear infinite;
+}
+
+/* Chip locator callout on device photos */
+@keyframes locator-pulse {
+  0%, 100% {
+    box-shadow: 0 0 0 0 rgba(0, 113, 227, 0.45);
+  }
+  70% {
+    box-shadow: 0 0 0 9px rgba(0, 113, 227, 0);
+  }
+}
+.locator-dot {
+  animation: locator-pulse 2.2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+
+/* Ambient drift for the drawer's decorative mesh */
+@keyframes mesh-drift {
+  0%,
+  100% {
+    transform: translate3d(0, 0, 0) scale(1);
+  }
+  50% {
+    transform: translate3d(6%, -4%, 0) scale(1.12);
+  }
+}
+.mesh-drift {
+  animation: mesh-drift 14s ease-in-out infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .drawer-panel,
+  .drawer-scrim,
+  .card-in,
+  .chip-sheen,
+  .locator-dot,
+  .mesh-drift {
+    animation: none !important;
+  }
 }
