@@ -1,0 +1,4 @@
+-- AlterTable
+ALTER TABLE "DeviceSpec" ADD COLUMN     "heightMm" DOUBLE PRECISION,
+ADD COLUMN     "thicknessMm" DOUBLE PRECISION,
+ADD COLUMN     "widthMm" DOUBLE PRECISION;

@@ -3,6 +3,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { prisma } from "@/lib/prisma";
 import { buildDeviceAbout } from "@/lib/deviceCopy";
+import { getChipsetGeekbenchRollup } from "@/lib/chipsetRealPerf";
 import ChipsetPerformanceChart from "@/components/ChipsetPerformanceChart";
 
 const CATEGORY_LABELS: Record<string, string> = {
@@ -19,7 +20,7 @@ export default async function DevicePage({
 }) {
   const { slug } = await params;
 
-  const [device, allChipsets] = await Promise.all([
+  const [device, allChipsets, rollup] = await Promise.all([
     prisma.device.findUnique({
       where: { slug },
       include: {
@@ -29,6 +30,11 @@ export default async function DevicePage({
             devices: { orderBy: { releaseDate: "desc" } },
           },
         },
+        benchmarks: {
+          where: { family: "GEEKBENCH_6", metric: "MULTI_CORE" },
+          orderBy: { value: "desc" },
+          take: 1,
+        },
       },
     }),
     prisma.chipset.findMany({
@@ -37,10 +43,10 @@ export default async function DevicePage({
         slug: true,
         name: true,
         releaseYear: true,
-        geekbenchMultiCore: true,
         brand: { select: { name: true, accent: true } },
       },
     }),
+    getChipsetGeekbenchRollup(),
   ]);
 
   if (!device) notFound();
@@ -137,9 +143,26 @@ export default async function DevicePage({
           ))}
         </div>
 
+        {device.benchmarks[0] && (
+          <a
+            href={device.benchmarks[0].sourceUrl}
+            target="_blank"
+            rel="noopener noreferrer nofollow"
+            className="mt-6 flex items-baseline gap-2 rounded-2xl border border-[var(--line)] bg-[var(--signal)]/[0.04] p-4 hover:border-[var(--signal)]/30"
+          >
+            <span className="spec-value text-2xl font-bold text-[var(--signal)]">
+              {device.benchmarks[0].value.toLocaleString()}
+            </span>
+            <span className="text-[11px] font-medium text-[var(--ink-faint)]">
+              Geekbench 6 multi-core, verified · {device.benchmarks[0].sourceName}
+            </span>
+          </a>
+        )}
+
         <div className="mt-8">
           <ChipsetPerformanceChart
             chipsets={allChipsets}
+            rollup={Object.fromEntries(rollup)}
             highlightSlug={chipset.slug}
             title={`How ${chipset.name} ranks`}
           />

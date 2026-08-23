@@ -34,15 +34,23 @@
 
 body {
   color: var(--foreground);
-  background-color: var(--mist);
+  background-color: #eaf1fb;
   background-image:
-    radial-gradient(900px 520px at 12% -8%, rgba(0, 113, 227, 0.13), transparent 62%),
-    radial-gradient(760px 460px at 92% 4%, rgba(34, 211, 238, 0.12), transparent 58%),
-    radial-gradient(680px 480px at 68% 96%, rgba(255, 105, 0, 0.07), transparent 60%),
-    linear-gradient(rgba(11, 18, 32, 0.028) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(11, 18, 32, 0.028) 1px, transparent 1px);
-  background-size: 100% 100%, 100% 100%, 100% 100%, 44px 44px, 44px 44px;
-  background-attachment: fixed, fixed, fixed, fixed, fixed;
+    radial-gradient(1000px 580px at 10% -10%, rgba(0, 113, 227, 0.22), transparent 60%),
+    radial-gradient(820px 520px at 96% 0%, rgba(34, 211, 238, 0.18), transparent 58%),
+    radial-gradient(760px 560px at 70% 100%, rgba(255, 105, 0, 0.1), transparent 62%),
+    radial-gradient(600px 460px at -4% 60%, rgba(0, 113, 227, 0.1), transparent 60%),
+    linear-gradient(rgba(11, 18, 32, 0.035) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(11, 18, 32, 0.035) 1px, transparent 1px);
+  background-size: 100% 100%, 100% 100%, 100% 100%, 100% 100%, 44px 44px, 44px 44px;
+  background-attachment: fixed, fixed, fixed, fixed, fixed, fixed;
+}
+
+/* Card surfaces get a faint blue lift instead of flat white, so nothing on
+   the page reads as a plain white box. */
+.surface-card {
+  background-color: #ffffff;
+  background-image: linear-gradient(165deg, rgba(0, 113, 227, 0.05), rgba(34, 211, 238, 0.02) 45%, transparent 75%);
 }
 
 /* Silicon die-trace corner flourish for section headers */

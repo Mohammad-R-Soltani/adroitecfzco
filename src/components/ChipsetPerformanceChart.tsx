@@ -5,30 +5,36 @@ export type PerfChipset = {
   slug: string;
   name: string;
   releaseYear: number;
-  geekbenchMultiCore: number | null;
   brand: { name: string; accent: string };
 };
 
+type RealBenchmark = { value: number; deviceName: string; sourceName: string; sourceUrl: string };
+
 export default function ChipsetPerformanceChart({
   chipsets,
+  rollup,
   highlightSlug,
   title = "Relative CPU power",
 }: {
   chipsets: PerfChipset[];
+  rollup: Record<string, RealBenchmark>;
   highlightSlug?: string;
   title?: string;
 }) {
   const ranked = chipsets
-    .filter((c) => c.geekbenchMultiCore != null)
-    .sort((a, b) => (b.geekbenchMultiCore ?? 0) - (a.geekbenchMultiCore ?? 0));
+    .map((c) => ({ ...c, real: rollup[c.id] ?? null }))
+    .filter((c) => c.real)
+    .sort((a, b) => b.real!.value - a.real!.value);
+
+  const untested = chipsets.filter((c) => !rollup[c.id]);
 
   if (ranked.length === 0) return null;
 
-  const max = Math.max(...ranked.map((c) => c.geekbenchMultiCore ?? 0));
+  const max = ranked[0].real!.value;
   const brands = Array.from(new Map(ranked.map((c) => [c.brand.name, c.brand.accent])).entries());
 
   return (
-    <div className="rounded-2xl border border-[var(--line)] bg-white p-5 shadow-sm">
+    <div className="surface-card rounded-2xl border border-[var(--line)] p-5 shadow-sm">
       <div className="mb-4 flex flex-wrap items-center justify-between gap-2">
         <h2 className="font-display text-sm font-semibold text-[var(--ink)]">{title}</h2>
         <div className="flex items-center gap-3">
@@ -43,7 +49,7 @@ export default function ChipsetPerformanceChart({
 
       <div className="space-y-2.5">
         {ranked.map((chipset) => {
-          const score = chipset.geekbenchMultiCore ?? 0;
+          const score = chipset.real!.value;
           const widthPct = Math.max(6, Math.round((score / max) * 100));
           const isHighlighted = chipset.slug === highlightSlug;
           return (
@@ -78,9 +84,16 @@ export default function ChipsetPerformanceChart({
         })}
       </div>
 
-      <p className="mt-4 text-[11px] leading-relaxed text-[var(--ink-faint)]">
-        Approximate Geekbench 6 multi-core scores, for relative comparison only — actual
-        results vary by device, cooling and software version.
+      {untested.length > 0 && (
+        <p className="mt-4 text-[11px] leading-relaxed text-[var(--ink-faint)]">
+          <span className="font-semibold text-[var(--ink-soft)]">Not yet benchmarked: </span>
+          {untested.map((c) => c.name).join(", ")}
+        </p>
+      )}
+
+      <p className="mt-2 text-[11px] leading-relaxed text-[var(--ink-faint)]">
+        Best verified Geekbench 6 multi-core result among each chipset&apos;s devices in the
+        catalog — sourced, not estimated.
       </p>
     </div>
   );

@@ -17,7 +17,6 @@ export type ListChipset = {
   gpuSummary: string;
   npuSummary: string | null;
   maxRam: string | null;
-  geekbenchMultiCore: number | null;
   highlight: string;
   gradientFrom: string;
   gradientTo: string;
@@ -30,14 +29,18 @@ export type ListChipset = {
   }[];
 };
 
+type RealBenchmark = { value: number; deviceName: string; sourceName: string; sourceUrl: string };
+
 export default function ChipsetListCard({
   chipset,
   isBookmarked,
   index,
+  realBenchmark,
 }: {
   chipset: ListChipset;
   isBookmarked: boolean;
   index: number;
+  realBenchmark: RealBenchmark | null;
 }) {
   const [bookmarked, setBookmarked] = useState(isBookmarked);
   const [isPending, startTransition] = useTransition();
@@ -186,15 +189,23 @@ export default function ChipsetListCard({
 
           <p className="text-sm leading-relaxed text-[var(--ink-soft)]">{chipset.highlight}</p>
 
-          {chipset.geekbenchMultiCore && (
-            <div className="flex items-baseline gap-2">
+          {realBenchmark ? (
+            <a
+              href={realBenchmark.sourceUrl}
+              target="_blank"
+              rel="noopener noreferrer nofollow"
+              onClick={(e) => e.stopPropagation()}
+              className="flex items-baseline gap-2 hover:opacity-80"
+            >
               <span className="spec-value text-3xl font-bold text-[var(--signal)]">
-                {chipset.geekbenchMultiCore.toLocaleString()}
+                {realBenchmark.value.toLocaleString()}
               </span>
               <span className="text-[11px] font-medium text-[var(--ink-faint)]">
-                Geekbench 6 multi-core (approx.)
+                Geekbench 6 multi-core · {realBenchmark.deviceName} · {realBenchmark.sourceName}
               </span>
-            </div>
+            </a>
+          ) : (
+            <p className="text-[11px] font-medium text-[var(--ink-faint)]">Not yet benchmarked</p>
           )}
 
           {/* Full spec sheet unfurls for the focused card */}

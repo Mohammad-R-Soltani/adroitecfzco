@@ -58,7 +58,7 @@ export default function NewsRail({ items }: { items: RailItem[] }) {
                 onClick={() => setActive(item)}
                 whileHover={{ y: -4 }}
                 whileTap={{ scale: 0.97 }}
-                className="group flex w-[200px] shrink-0 snap-start flex-col overflow-hidden rounded-xl border border-[var(--line)] bg-white text-left shadow-sm transition-colors hover:border-[var(--signal)]/40 hover:shadow-md sm:w-[230px]"
+                className="surface-card group flex w-[200px] shrink-0 snap-start flex-col overflow-hidden rounded-xl border border-[var(--line)] text-left shadow-sm transition-colors hover:border-[var(--signal)]/40 hover:shadow-md sm:w-[230px]"
               >
                 <div className="relative h-24 w-full shrink-0 overflow-hidden bg-[var(--mist)] sm:h-28">
                   {item.imageUrl ? (

@@ -11,7 +11,7 @@ export default async function AdminUsersPage() {
     <div className="mx-auto max-w-3xl space-y-8">
       <CreateUserForm />
 
-      <div className="overflow-hidden rounded-2xl border border-[var(--line)] bg-white shadow-sm">
+      <div className="surface-card overflow-hidden rounded-2xl border border-[var(--line)] shadow-sm">
         <table className="w-full text-left text-sm">
           <thead className="bg-[var(--mist)] text-[var(--ink-soft)]">
             <tr>

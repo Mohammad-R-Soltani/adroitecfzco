@@ -83,7 +83,12 @@ export default function Assistant({ userName }: { userName: string }) {
 
       <AnimatePresence>
         {open && (
-          <div className="fixed inset-0 z-50 flex items-end justify-end sm:p-6">
+          <div
+            role="dialog"
+            aria-modal="true"
+            aria-label="Product desk assistant"
+            className="fixed inset-0 z-50 flex items-end justify-end sm:p-6"
+          >
             <motion.button
               type="button"
               aria-label="Close assistant"

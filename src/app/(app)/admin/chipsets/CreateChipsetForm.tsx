@@ -16,7 +16,7 @@ export default function CreateChipsetForm() {
   }, [state.success]);
 
   return (
-    <details className="rounded-2xl border border-[var(--line)] bg-white p-5 shadow-sm">
+    <details className="surface-card rounded-2xl border border-[var(--line)] p-5 shadow-sm">
       <summary className="cursor-pointer text-sm font-medium text-[var(--ink)]">
         + Add a new chipset
       </summary>

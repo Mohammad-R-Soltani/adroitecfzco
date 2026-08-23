@@ -6,7 +6,7 @@ export default async function AppLayout({ children }: { children: React.ReactNod
   const user = await requireUser();
 
   return (
-    <div className="min-h-dvh bg-[var(--background)]">
+    <div className="min-h-dvh">
       <NavBar displayName={user.displayName} role={user.role} jobTitle={user.jobTitle} />
       {children}
       <Assistant userName={user.displayName} />

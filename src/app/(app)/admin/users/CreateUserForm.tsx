@@ -19,7 +19,7 @@ export default function CreateUserForm() {
     <form
       ref={formRef}
       action={formAction}
-      className="grid grid-cols-1 gap-3 rounded-2xl border border-[var(--line)] bg-white p-5 shadow-sm sm:grid-cols-2"
+      className="surface-card grid grid-cols-1 gap-3 rounded-2xl border border-[var(--line)] p-5 shadow-sm sm:grid-cols-2"
     >
       <input name="username" placeholder="Username" required className={inputClass} />
       <input name="displayName" placeholder="Full name" required className={inputClass} />

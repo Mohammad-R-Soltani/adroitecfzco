@@ -5,32 +5,39 @@ export type RankChipset = {
   slug: string;
   name: string;
   releaseYear: number;
-  geekbenchMultiCore: number | null;
   brand: { name: string; accent: string };
 };
+
+type RealBenchmark = { value: number; deviceName: string; sourceName: string; sourceUrl: string };
 
 export default function PowerRankSidebar({
   chipsets,
   deviceCount,
+  rollup,
 }: {
   chipsets: RankChipset[];
   deviceCount: number;
+  rollup: Record<string, RealBenchmark>;
 }) {
   const ranked = chipsets
-    .filter((c) => c.geekbenchMultiCore != null)
-    .sort((a, b) => (b.geekbenchMultiCore ?? 0) - (a.geekbenchMultiCore ?? 0));
+    .map((c) => ({ ...c, real: rollup[c.id] ?? null }))
+    .filter((c) => c.real)
+    .sort((a, b) => (b.real!.value - a.real!.value));
 
-  const max = ranked[0]?.geekbenchMultiCore ?? 1;
+  const untestedCount = chipsets.length - ranked.length;
+  const max = ranked[0]?.real?.value ?? 1;
   const appleCount = chipsets.filter((c) => c.brand.name === "Apple").length;
   const xiaomiCount = chipsets.filter((c) => c.brand.name === "Xiaomi").length;
 
   return (
     <aside className="sticky top-[4.75rem] flex flex-col gap-4">
-      <section className="overflow-hidden rounded-2xl border border-[var(--line)] bg-white/80 shadow-sm backdrop-blur-md">
+      <section className="overflow-hidden rounded-2xl border border-[var(--line)] bg-gradient-to-b from-white to-[var(--mist)]/40 shadow-sm backdrop-blur-md">
         <header className="border-b border-[var(--line)] px-4 py-3">
-          <span className="trace-rule mb-2 block h-[3px] w-[42px] rounded-full" />
+          <span className="mb-2 block h-[3px] w-[42px] rounded-full bg-[var(--signal)]" />
           <h2 className="font-display text-sm font-bold text-[var(--ink)]">Power ranking</h2>
-          <p className="mt-0.5 text-[11px] text-[var(--ink-faint)]">Multi-core, approximate</p>
+          <p className="mt-0.5 text-[11px] text-[var(--ink-faint)]">
+            Verified Geekbench 6 multi-core, best device per chipset
+          </p>
         </header>
 
         <ol className="divide-y divide-[var(--line)]">
@@ -51,19 +58,25 @@ export default function PowerRankSidebar({
                     <div
                       className="h-full rounded-full"
                       style={{
-                        width: `${Math.max(8, Math.round(((c.geekbenchMultiCore ?? 0) / max) * 100))}%`,
+                        width: `${Math.max(8, Math.round((c.real!.value / max) * 100))}%`,
                         background: c.brand.accent,
                       }}
                     />
                   </div>
                 </div>
                 <span className="spec-value shrink-0 text-[11px] font-semibold text-[var(--ink-soft)]">
-                  {(c.geekbenchMultiCore ?? 0).toLocaleString()}
+                  {c.real!.value.toLocaleString()}
                 </span>
               </Link>
             </li>
           ))}
         </ol>
+
+        {untestedCount > 0 && (
+          <p className="border-t border-[var(--line)] px-4 py-2 text-[10.5px] text-[var(--ink-faint)]">
+            {untestedCount} chipset{untestedCount > 1 ? "s" : ""} not yet benchmarked
+          </p>
+        )}
 
         <Link
           href="/compare"
@@ -73,7 +86,7 @@ export default function PowerRankSidebar({
         </Link>
       </section>
 
-      <section className="rounded-2xl border border-[var(--line)] bg-white/80 p-4 shadow-sm backdrop-blur-md">
+      <section className="rounded-2xl border border-[var(--line)] bg-gradient-to-b from-white to-[var(--mist)]/40 p-4 shadow-sm backdrop-blur-md">
         <h2 className="font-display mb-3 text-sm font-bold text-[var(--ink)]">In the catalog</h2>
         <dl className="grid grid-cols-3 gap-2 text-center">
           <div className="rounded-xl bg-[var(--mist)] px-2 py-2.5">

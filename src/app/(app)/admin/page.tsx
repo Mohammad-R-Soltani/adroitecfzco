@@ -20,7 +20,7 @@ export default async function AdminOverviewPage() {
     <div className="mx-auto max-w-3xl grid grid-cols-2 gap-3 sm:grid-cols-4">
       {stats.map((stat) => {
         const card = (
-          <div className="rounded-2xl border border-[var(--line)] bg-white p-5 shadow-sm">
+          <div className="surface-card rounded-2xl border border-[var(--line)] p-5 shadow-sm">
             <p className="spec-value text-3xl font-semibold text-[var(--ink)]">{stat.value}</p>
             <p className="mt-1 text-xs font-medium text-[var(--ink-soft)]">{stat.label}</p>
           </div>

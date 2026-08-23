@@ -7,11 +7,13 @@ import { logout } from "@/app/actions";
 import Logomark from "./Logomark";
 
 const NAV_ITEMS = [
-  { href: "/", label: "Feed", hint: "Newest chipsets", icon: "feed" },
-  { href: "/catalog", label: "Catalog", hint: "Every device", icon: "catalog" },
-  { href: "/compare", label: "Compare", hint: "Power rankings", icon: "compare" },
-  { href: "/me", label: "Profile", hint: "Your saved chips", icon: "profile" },
+  { href: "/", label: "Feed", hint: "Newest chipsets", icon: "feed", color: "#0071e3" },
+  { href: "/catalog", label: "Catalog", hint: "Every device", icon: "catalog", color: "#7c5cfc" },
+  { href: "/compare", label: "Compare", hint: "Power rankings", icon: "compare", color: "#1baf7a" },
+  { href: "/me", label: "Profile", hint: "Your saved chips", icon: "profile", color: "#ec4a8a" },
 ] as const;
+
+const ADMIN_ITEM = { href: "/admin", label: "Admin", hint: "Users & content", icon: "admin", color: "#e39400" } as const;
 
 export default function NavBar({
   displayName,
@@ -42,10 +44,7 @@ export default function NavBar({
     setOpen(false);
   }, [pathname]);
 
-  const items =
-    role === "ADMIN"
-      ? [...NAV_ITEMS, { href: "/admin", label: "Admin", hint: "Users & content", icon: "admin" as const }]
-      : NAV_ITEMS;
+  const items = role === "ADMIN" ? [...NAV_ITEMS, ADMIN_ITEM] : NAV_ITEMS;
 
   return (
     <>
@@ -76,7 +75,7 @@ export default function NavBar({
       </header>
 
       {open && (
-        <div className="fixed inset-0 z-40">
+        <div role="dialog" aria-modal="true" aria-label="Main menu" className="fixed inset-0 z-40">
           <button
             type="button"
             aria-label="Close menu"
@@ -133,27 +132,29 @@ export default function NavBar({
                   <Link
                     key={item.href}
                     href={item.href}
-                    className={`group relative flex items-center gap-3 overflow-hidden rounded-xl px-3 py-2.5 transition ${
-                      active ? "bg-[var(--signal)]/8" : "hover:bg-[var(--mist)]"
-                    }`}
+                    className="group relative flex items-center gap-3 overflow-hidden rounded-xl px-3 py-2.5 transition hover:bg-[var(--mist)]"
+                    style={active ? { background: `${item.color}12` } : undefined}
                   >
                     {active && (
-                      <span className="absolute inset-y-2 left-0 w-[3px] rounded-r-full bg-[var(--signal)]" />
+                      <span
+                        className="absolute inset-y-2 left-0 w-[3px] rounded-r-full"
+                        style={{ background: item.color }}
+                      />
                     )}
                     <span
-                      className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-lg transition ${
+                      className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg transition group-hover:scale-105"
+                      style={
                         active
-                          ? "bg-[var(--signal)] text-white"
-                          : "bg-[var(--mist)] text-[var(--ink-soft)] group-hover:bg-white group-hover:text-[var(--signal)]"
-                      }`}
+                          ? { background: item.color, color: "#fff" }
+                          : { background: `${item.color}14`, color: item.color }
+                      }
                     >
                       <Icon name={item.icon} />
                     </span>
                     <span className="min-w-0">
                       <span
-                        className={`block text-sm font-semibold ${
-                          active ? "text-[var(--signal)]" : "text-[var(--ink)]"
-                        }`}
+                        className="block text-sm font-semibold"
+                        style={{ color: active ? item.color : "var(--ink)" }}
                       >
                         {item.label}
                       </span>

@@ -14,7 +14,7 @@ export default function DeviceCard({ device }: { device: DeviceCardData }) {
   return (
     <Link
       href={`/devices/${device.slug}`}
-      className="group relative flex aspect-[4/5] flex-col justify-end overflow-hidden rounded-2xl border border-[var(--line)] bg-white shadow-sm transition hover:border-[var(--signal)]/40 hover:shadow-md"
+      className="surface-card group relative flex aspect-[4/5] flex-col justify-end overflow-hidden rounded-2xl border border-[var(--line)] shadow-sm transition hover:border-[var(--signal)]/40 hover:shadow-md"
     >
       {device.imageUrl ? (
         <>

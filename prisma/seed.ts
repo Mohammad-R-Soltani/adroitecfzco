@@ -177,8 +177,6 @@ type ChipsetSeed = {
   gpuSummary: string;
   npuSummary?: string;
   maxRam?: string;
-  geekbenchSingleCore?: number;
-  geekbenchMultiCore?: number;
   featured?: boolean;
   highlight: string;
   gradientFrom: string;
@@ -256,16 +254,14 @@ async function main() {
       maxRam: "12GB",
 
       highlight:
-        "Adds a vapor chamber and redesigned GPU architecture for demanding on-device AI workloads.",
+        "Adds a vapor chamber and redesigned GPU architecture for demanding on-device AI workloads. iPhone Air ships a 5-core-GPU variant of this same chip (Pro Max gets the full 6-core GPU) — Apple markets both under the A19 Pro name.",
 
       gradientFrom: "#1d1d1f",
       gradientTo: "#0071e3",
 
       sourceNote:
-        "Apple keynote, September 2025 — iPhone 17 Pro / Pro Max",
+        "Apple keynote, September 2025 — iPhone 17 Pro / Pro Max / Air. Chip identity for iPhone Air confirmed on Apple's own iPhone Air tech-specs page (apple.com/iphone-air/specs).",
 
-      geekbenchSingleCore: 3800,
-      geekbenchMultiCore: 9600,
       featured: true,
 
       devices: [
@@ -281,6 +277,13 @@ async function main() {
           category: DeviceCategory.PHONE,
           releaseDate: "2025-09-19",
           imageSearch: "iPhone 17 Pro Max",
+        },
+
+        {
+          name: "iPhone Air",
+          category: DeviceCategory.PHONE,
+          releaseDate: "2025-09-19",
+          imageSearch: "iPhone Air",
         },
       ],
     },
@@ -309,16 +312,14 @@ async function main() {
       maxRam: "8GB",
 
       highlight:
-        "Powers the standard iPhone 17 line and iPhone Air.",
+        "Powers the standard iPhone 17. (iPhone Air actually ships a binned A19 Pro, not this chip — see A19 Pro above.)",
 
       gradientFrom: "#2c2c2e",
       gradientTo: "#5ac8fa",
 
       sourceNote:
-        "Apple keynote, September 2025 — iPhone 17 / iPhone Air",
+        "Apple keynote, September 2025 — iPhone 17",
 
-      geekbenchSingleCore: 3700,
-      geekbenchMultiCore: 9100,
 
       devices: [
         {
@@ -326,13 +327,6 @@ async function main() {
           category: DeviceCategory.PHONE,
           releaseDate: "2025-09-19",
           imageSearch: "iPhone 17",
-        },
-
-        {
-          name: "iPhone Air",
-          category: DeviceCategory.PHONE,
-          releaseDate: "2025-09-19",
-          imageSearch: "iPhone Air",
         },
       ],
     },
@@ -369,8 +363,6 @@ async function main() {
       sourceNote:
         "Apple keynote, September 2024 — iPhone 16 Pro / Pro Max",
 
-      geekbenchSingleCore: 3400,
-      geekbenchMultiCore: 8300,
       featured: true,
 
       devices: [
@@ -422,8 +414,6 @@ async function main() {
       sourceNote:
         "Apple keynotes, 2024/2025 — iPhone 16, 16 Plus, 16e",
 
-      geekbenchSingleCore: 3300,
-      geekbenchMultiCore: 8000,
 
       devices: [
         {
@@ -481,8 +471,6 @@ async function main() {
       sourceNote:
         "Apple announcement, October 2025 — MacBook Pro and iPad Pro",
 
-      geekbenchSingleCore: 4000,
-      geekbenchMultiCore: 16500,
       featured: true,
 
       devices: [
@@ -534,8 +522,6 @@ async function main() {
       sourceNote:
         "Apple announcements, 2024 — iPad Pro, MacBook Pro, iMac and Mac mini",
 
-      geekbenchSingleCore: 3900,
-      geekbenchMultiCore: 14700,
 
       devices: [
         {
@@ -594,8 +580,6 @@ async function main() {
       sourceNote:
         "Apple announcement, October 2024 — MacBook Pro, Mac mini, Mac Studio",
 
-      geekbenchSingleCore: 3900,
-      geekbenchMultiCore: 22000,
 
       devices: [
         {
@@ -647,8 +631,6 @@ async function main() {
       sourceNote:
         "Xiaomi launch event, May 2025",
 
-      geekbenchSingleCore: 2400,
-      geekbenchMultiCore: 7800,
       featured: true,
 
       devices: [
@@ -701,8 +683,6 @@ async function main() {
       sourceNote:
         "Qualcomm Snapdragon Summit, 2025",
 
-      geekbenchSingleCore: 3600,
-      geekbenchMultiCore: 11200,
       featured: true,
 
       devices: [
@@ -762,8 +742,6 @@ async function main() {
       sourceNote:
         "Qualcomm Snapdragon Summit, October 2024",
 
-      geekbenchSingleCore: 3200,
-      geekbenchMultiCore: 9800,
 
       devices: [
         {
@@ -822,8 +800,6 @@ async function main() {
       sourceNote:
         "MediaTek announcement, October 2024",
 
-      geekbenchSingleCore: 3100,
-      geekbenchMultiCore: 9700,
       featured: true,
 
       devices: [
@@ -869,8 +845,6 @@ async function main() {
       sourceNote:
         "MediaTek announcement, December 2024",
 
-      geekbenchSingleCore: 2200,
-      geekbenchMultiCore: 6700,
 
       devices: [
         {
@@ -933,8 +907,6 @@ async function main() {
         gradientFrom: c.gradientFrom,
         gradientTo: c.gradientTo,
         sourceNote: c.sourceNote,
-        geekbenchSingleCore: c.geekbenchSingleCore,
-        geekbenchMultiCore: c.geekbenchMultiCore,
         featured: c.featured ?? false,
       },
 
@@ -953,8 +925,6 @@ async function main() {
         gradientFrom: c.gradientFrom,
         gradientTo: c.gradientTo,
         sourceNote: c.sourceNote,
-        geekbenchSingleCore: c.geekbenchSingleCore,
-        geekbenchMultiCore: c.geekbenchMultiCore,
         featured: c.featured ?? false,
       },
     });

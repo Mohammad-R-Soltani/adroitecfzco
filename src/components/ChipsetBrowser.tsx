@@ -6,12 +6,16 @@ import ChipsetListCard, { type ListChipset } from "./ChipsetListCard";
 
 const BRAND_FILTERS = ["All", "Apple", "Xiaomi"] as const;
 
+type RealBenchmark = { value: number; deviceName: string; sourceName: string; sourceUrl: string };
+
 export default function ChipsetBrowser({
   chipsets,
   bookmarkedIds,
+  rollup,
 }: {
   chipsets: ListChipset[];
   bookmarkedIds: string[];
+  rollup: Record<string, RealBenchmark>;
 }) {
   const [query, setQuery] = useState("");
   const [brand, setBrand] = useState<(typeof BRAND_FILTERS)[number]>("All");
@@ -128,6 +132,7 @@ export default function ChipsetBrowser({
               chipset={chipset}
               index={i}
               isBookmarked={bookmarked.has(chipset.id)}
+              realBenchmark={rollup[chipset.id] ?? null}
             />
           ))}
         </div>

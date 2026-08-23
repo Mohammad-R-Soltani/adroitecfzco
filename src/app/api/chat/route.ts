@@ -64,6 +64,9 @@ export async function POST(req: NextRequest) {
       devices: {
         select: {
           name: true,
+          benchmarks: {
+            select: { family: true, metric: true, value: true, sourceName: true },
+          },
         },
       },
     },
@@ -76,9 +79,17 @@ export async function POST(req: NextRequest) {
 
   const catalog = chipsets
     .map((c) => {
-      const devices =
+      const deviceNames =
         c.devices.map((d) => d.name).join(", ") ||
         "none listed";
+
+      const benchLines = c.devices
+        .flatMap((d) =>
+          d.benchmarks.map(
+            (b) => `  Benchmark: ${d.name} — ${b.family} ${b.metric} = ${b.value} (source: ${b.sourceName}, verified)`
+          )
+        )
+        .join("\n");
 
       return [
         `${c.brand.name} ${c.name} (${c.series}, ${c.releaseYear})`,
@@ -91,10 +102,8 @@ export async function POST(req: NextRequest) {
         c.maxRam
           ? `  Memory: ${c.maxRam}`
           : null,
-        c.geekbenchMultiCore
-          ? `  Geekbench 6 multi-core (approx): ${c.geekbenchMultiCore}`
-          : null,
-        `  Devices: ${devices}`,
+        `  Devices: ${deviceNames}`,
+        benchLines || "  Benchmark: no verified results on file yet for these devices",
         `  Note: ${c.highlight}`,
       ]
         .filter(Boolean)
@@ -115,7 +124,7 @@ Rules:
 - Keep answers concise: two or three short paragraphs at most unless the user explicitly asks for more detail.
 - Base every factual claim about chipsets and devices on the catalog below.
 - If something isn't in the catalog, say so plainly rather than guessing.
-- Geekbench numbers in the catalog are approximate and only meant for relative comparison — say that whenever you cite them.
+- Benchmark figures in the catalog are real, sourced lab results tied to a specific device and benchmark version (e.g. "Geekbench 6" vs "Geekbench 5", "AnTuTu v10" vs "v11") — never mix different versions in one comparison, and name the source when you cite a number. If a chipset has no "Benchmark:" line for any of its devices, say plainly that it hasn't been verified yet rather than guessing.
 - When comparing chipsets, lead with what matters to a trade buyer: which tier the part sits in, how it positions the device against its rivals, and the selling points a buyer's own customers will ask about.
 - Never invent prices, margins, MOQs, stock levels, regional variants, or release dates.
 - If information is missing from the catalog, tell the user that the team should confirm it internally.
@@ -143,80 +152,85 @@ ${catalog}`;
   // Call OpenRouter
   // ============================================================
 
+  // `openrouter/free` routes to whichever free model is available, and several
+  // of those are reasoning models that spend their token budget thinking and
+  // return an empty `content`. A low reasoning effort plus generous headroom
+  // keeps that from happening; one retry covers the rest.
+  async function askOpenRouter() {
+    return fetch("https://openrouter.ai/api/v1/chat/completions", {
+      method: "POST",
+
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${apiKey}`,
+
+        // Optional but recommended by OpenRouter
+        "HTTP-Referer":
+          process.env.NEXT_PUBLIC_APP_URL ||
+          "https://adroitecfzco.com",
+
+        "X-Title": "Adroit Device Catalog",
+      },
+
+      body: JSON.stringify({
+        model: MODEL,
+        messages,
+
+        temperature: 0.4,
+
+        max_tokens: 1400,
+
+        reasoning: { effort: "low" },
+      }),
+    });
+  }
+
   try {
-    const res = await fetch(
-      "https://openrouter.ai/api/v1/chat/completions",
-      {
-        method: "POST",
+    let reply: string | undefined;
 
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${apiKey}`,
+    for (let attempt = 0; attempt < 2 && !reply; attempt++) {
+      const res = await askOpenRouter();
 
-          // Optional but recommended by OpenRouter
-          "HTTP-Referer":
-            process.env.NEXT_PUBLIC_APP_URL ||
-            "https://adroitecfzco.com",
+      if (!res.ok) {
+        const detail = await res.text();
 
-          "X-Title": "Adroit Device Catalog",
-        },
+        console.error(
+          "OpenRouter error:",
+          res.status,
+          detail.slice(0, 1000)
+        );
 
-        body: JSON.stringify({
-          model: MODEL,
-          messages,
-
-          temperature: 0.4,
-
-          max_tokens: 800,
-        }),
+        return NextResponse.json(
+          {
+            error:
+              "The assistant is unavailable right now. Try again in a moment.",
+          },
+          {
+            status: 502,
+          }
+        );
       }
-    );
 
-    // ============================================================
-    // Handle API error
-    // ============================================================
+      const data = await res.json();
 
-    if (!res.ok) {
-      const detail = await res.text();
+      reply =
+        data?.choices?.[0]?.message?.content
+          ?.toString()
+          .trim() || undefined;
 
-      console.error(
-        "OpenRouter error:",
-        res.status,
-        detail.slice(0, 1000)
-      );
-
-      return NextResponse.json(
-        {
-          error:
-            "The assistant is unavailable right now. Try again in a moment.",
-        },
-        {
-          status: 502,
-        }
-      );
+      if (!reply) {
+        console.error(
+          `OpenRouter returned no assistant message (attempt ${attempt + 1}):`,
+          JSON.stringify(data).slice(0, 1000)
+        );
+      }
     }
 
-    // ============================================================
-    // Parse response
-    // ============================================================
-
-    const data = await res.json();
-
-    const reply =
-      data?.choices?.[0]?.message?.content
-        ?.toString()
-        .trim();
-
     if (!reply) {
-      console.error(
-        "OpenRouter returned no assistant message:",
-        JSON.stringify(data).slice(0, 2000)
-      );
-
       return NextResponse.json(
         {
           error:
-            "The assistant didn't return an answer.",
+            "The assistant didn't return an answer. Try asking again.",
         },
         {
           status: 502,

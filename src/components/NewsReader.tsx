@@ -30,7 +30,12 @@ export default function NewsReader({
   return (
     <AnimatePresence>
       {item && (
-        <div className="fixed inset-0 z-50 flex items-end justify-center sm:items-center sm:p-6">
+        <div
+          role="dialog"
+          aria-modal="true"
+          aria-label={item.title}
+          className="fixed inset-0 z-50 flex items-end justify-center sm:items-center sm:p-6"
+        >
           <motion.button
             type="button"
             aria-label="Close article"

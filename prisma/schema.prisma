@@ -64,9 +64,6 @@ model Chipset {
   gradientFrom  String
   gradientTo    String
   sourceNote    String
-  geekbenchSingleCore Int?
-  geekbenchMultiCore  Int?
-  benchmarkNote       String?
   featured      Boolean  @default(false)
   createdAt     DateTime @default(now())
   updatedAt     DateTime @updatedAt
@@ -94,7 +91,155 @@ model Device {
   imageAttributionUrl  String?
   imageLicense         String?
 
+  spec       DeviceSpec?
+  benchmarks DeviceBenchmark[]
+
   @@unique([chipsetId, name])
+}
+
+enum BenchmarkFamily {
+  GEEKBENCH_5
+  GEEKBENCH_6
+  ANTUTU_V9
+  ANTUTU_V10
+  ANTUTU_V11
+  THREEDMARK_WILD_LIFE
+  THREEDMARK_WILD_LIFE_EXTREME
+  THREEDMARK_STEEL_NOMAD_LIGHT
+  THREEDMARK_STEEL_NOMAD
+}
+
+enum BenchmarkMetric {
+  SINGLE_CORE
+  MULTI_CORE
+  TOTAL
+  CPU_SCORE
+  GPU_SCORE
+  MEM_SCORE
+  UX_SCORE
+  SCORE
+  FPS
+}
+
+/// A single, individually-sourced benchmark measurement for one device.
+/// Never averaged or normalized across benchmark families — each row is one
+/// exact (family, metric) pair from one named source, so nothing gets mixed
+/// (Geekbench 5 with 6, AnTuTu v10 with v11, etc). The compare UI only ranks
+/// rows that share the same family + metric.
+model DeviceBenchmark {
+  id       String @id @default(cuid())
+  device   Device @relation(fields: [deviceId], references: [id], onDelete: Cascade)
+  deviceId String
+
+  family BenchmarkFamily
+  metric BenchmarkMetric
+  value  Float
+
+  testedVariant String? // e.g. "12GB/256GB, Global"
+  sourceName    String // e.g. "GSMArena", "Notebookcheck"
+  sourceUrl     String
+  sourceDate    String? // as reported by the source, e.g. "2025-09-20"
+  researchedAt  DateTime @default(now())
+  notes         String?
+
+  @@unique([deviceId, family, metric, sourceUrl])
+  @@index([deviceId, family, metric])
+}
+
+/// Full spec sheet for a device, laid out in the categories the trade is used
+/// to reading. Every field is optional — a sheet fills in over time, and the
+/// compare view renders a dash for anything still missing.
+model DeviceSpec {
+  id       String @id @default(cuid())
+  device   Device @relation(fields: [deviceId], references: [id], onDelete: Cascade)
+  deviceId String @unique
+
+  // NETWORK
+  networkTechnology String?
+  network2g         String?
+  network3g         String?
+  network4g         String?
+  network5g         String?
+  networkSpeed      String?
+
+  // LAUNCH
+  announced String?
+  status    String?
+
+  // BODY
+  dimensions String?
+  weight     String?
+  build      String?
+  sim        String?
+  bodyExtra  String?
+
+  // DISPLAY
+  displayType       String?
+  displaySize       String?
+  displayResolution String?
+  displayProtection String?
+
+  // PLATFORM
+  os      String?
+  cpu     String?
+  gpu     String?
+
+  // MEMORY
+  cardSlot        String?
+  internalStorage String?
+
+  // MAIN CAMERA
+  mainCameraModules  String?
+  mainCameraFeatures String?
+  mainCameraVideo    String?
+
+  // SELFIE CAMERA
+  selfieCameraModules  String?
+  selfieCameraFeatures String?
+  selfieCameraVideo    String?
+
+  // SOUND
+  loudspeaker String?
+  jack35mm    String?
+
+  // COMMS
+  wlan         String?
+  bluetooth    String?
+  positioning  String?
+  nfc          String?
+  infraredPort String?
+  radio        String?
+  usb          String?
+
+  // FEATURES
+  sensors String?
+
+  // BATTERY
+  batteryType String?
+  charging    String?
+
+  // MISC
+  colors String?
+  models String?
+  sar    String?
+  sarEu  String?
+  price  String?
+
+  /// Parsed numbers, so the compare view can rank and draw bars.
+  displayInches   Float?
+  refreshRateHz   Int?
+  batteryMah      Int?
+  chargingWatts   Int?
+  mainCameraMp    Float?
+  selfieCameraMp  Float?
+  weightGrams     Float?
+  heightMm        Float?
+  widthMm         Float?
+  thicknessMm     Float?
+
+  sourceName String?
+  sourceUrl  String?
+  updatedAt  DateTime @updatedAt
 }
 
 model Bookmark {

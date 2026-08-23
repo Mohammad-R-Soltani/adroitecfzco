@@ -2,6 +2,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { prisma } from "@/lib/prisma";
+import { getChipsetGeekbenchRollup } from "@/lib/chipsetRealPerf";
 import ChipsetPerformanceChart from "@/components/ChipsetPerformanceChart";
 
 export default async function ChipsetPage({
@@ -11,7 +12,7 @@ export default async function ChipsetPage({
 }) {
   const { slug } = await params;
 
-  const [chipset, allChipsets] = await Promise.all([
+  const [chipset, allChipsets, rollup] = await Promise.all([
     prisma.chipset.findUnique({
       where: { slug },
       include: {
@@ -25,10 +26,10 @@ export default async function ChipsetPage({
         slug: true,
         name: true,
         releaseYear: true,
-        geekbenchMultiCore: true,
         brand: { select: { name: true, accent: true } },
       },
     }),
+    getChipsetGeekbenchRollup(),
   ]);
 
   if (!chipset) notFound();
@@ -89,7 +90,11 @@ export default async function ChipsetPage({
         </div>
 
         <div className="mt-8">
-          <ChipsetPerformanceChart chipsets={allChipsets} highlightSlug={chipset.slug} />
+          <ChipsetPerformanceChart
+            chipsets={allChipsets}
+            rollup={Object.fromEntries(rollup)}
+            highlightSlug={chipset.slug}
+          />
         </div>
 
         {chipset.devices.length > 0 && (

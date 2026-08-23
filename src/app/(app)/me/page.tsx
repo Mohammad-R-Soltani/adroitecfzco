@@ -37,7 +37,7 @@ export default async function MePage() {
         </h2>
 
         {bookmarks.length === 0 ? (
-          <div className="rounded-2xl border border-[var(--line)] bg-white p-8 text-center text-[var(--ink-soft)] shadow-sm">
+          <div className="surface-card rounded-2xl border border-[var(--line)] p-8 text-center text-[var(--ink-soft)] shadow-sm">
             You haven&apos;t saved any chipsets yet. Tap the heart icon on any chipset card in the{" "}
             <Link href="/" className="text-[var(--signal)] underline underline-offset-4">
               feed
@@ -50,7 +50,7 @@ export default async function MePage() {
               <Link
                 href={`/chipsets/${b.chipset.slug}`}
                 key={b.id}
-                className="rounded-2xl border border-[var(--line)] bg-white p-4 shadow-sm transition hover:border-[var(--signal)]/40 hover:shadow-md"
+                className="surface-card rounded-2xl border border-[var(--line)] p-4 shadow-sm transition hover:border-[var(--signal)]/40 hover:shadow-md"
                 style={{
                   background: `linear-gradient(135deg, ${b.chipset.gradientFrom}14, white)`,
                 }}
