@@ -18,6 +18,8 @@ export type ListChipset = {
   npuSummary: string | null;
   maxRam: string | null;
   highlight: string;
+  strengthTag: string | null;
+  competitiveEdge: string | null;
   gradientFrom: string;
   gradientTo: string;
   brand: { name: string; accent: string };
@@ -173,6 +175,18 @@ export default function ChipsetListCard({
                 </Link>
               </h2>
               <p className="spec-value mt-0.5 text-xs text-[var(--ink-faint)]">{chipset.releaseYear}</p>
+              {chipset.strengthTag && (
+                <div className="mt-1.5">
+                  <span className="inline-block rounded-full bg-[var(--signal)]/10 px-2 py-0.5 text-[9.5px] font-bold uppercase tracking-wide text-[var(--signal)]">
+                    Leads in: {chipset.strengthTag}
+                  </span>
+                  {chipset.competitiveEdge && (
+                    <p className="mt-1 max-w-md text-[11.5px] leading-snug text-[var(--ink-faint)]">
+                      {firstSentence(chipset.competitiveEdge)}
+                    </p>
+                  )}
+                </div>
+              )}
             </div>
 
             <button
@@ -249,6 +263,12 @@ export default function ChipsetListCard({
       </div>
     </motion.article>
   );
+}
+
+function firstSentence(text: string): string {
+  const match = text.match(/^.*?[.!?](?:\s|$)/);
+  const sentence = (match?.[0] ?? text).trim();
+  return sentence.length < text.length ? sentence : text;
 }
 
 function HeartIcon({ filled }: { filled: boolean }) {

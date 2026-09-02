@@ -4,7 +4,13 @@ import { useMemo, useState } from "react";
 import { motion } from "framer-motion";
 import ChipsetListCard, { type ListChipset } from "./ChipsetListCard";
 
-const BRAND_FILTERS = ["All", "Apple", "Xiaomi"] as const;
+const BRAND_FILTERS = ["All", "Apple", "Xiaomi", "Samsung"] as const;
+const BRAND_PILL_COLOR: Record<(typeof BRAND_FILTERS)[number], string> = {
+  All: "var(--ink)",
+  Apple: "var(--signal)",
+  Xiaomi: "var(--ember)",
+  Samsung: "#1428A0",
+};
 
 type RealBenchmark = { value: number; deviceName: string; sourceName: string; sourceUrl: string };
 
@@ -90,14 +96,7 @@ export default function ChipsetBrowser({
                   <motion.span
                     layoutId="brand-filter-pill"
                     className="absolute inset-0 rounded-lg"
-                    style={{
-                      background:
-                        b === "Xiaomi"
-                          ? "var(--ember)"
-                          : b === "Apple"
-                            ? "var(--signal)"
-                            : "var(--ink)",
-                    }}
+                    style={{ background: BRAND_PILL_COLOR[b] }}
                     transition={{ type: "spring", damping: 26, stiffness: 340 }}
                   />
                 )}

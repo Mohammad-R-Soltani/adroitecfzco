@@ -11,6 +11,7 @@
   "dependencies": {
     "@prisma/adapter-pg": "^7.9.1",
     "@prisma/client": "^7.9.1",
+    "@whiskeysockets/baileys": "^7.0.0-rc14",
     "bcryptjs": "^3.0.3",
     "clsx": "^2.1.1",
     "fast-xml-parser": "^5.10.1",
@@ -18,7 +19,9 @@
     "jose": "^6.2.8",
     "next": "16.3.0",
     "pg": "^8.23.0",
+    "pino": "^10.3.1",
     "prisma": "^7.9.1",
+    "qrcode": "^1.5.4",
     "react": "19.2.8",
     "react-dom": "19.2.8",
     "server-only": "^0.0.1",

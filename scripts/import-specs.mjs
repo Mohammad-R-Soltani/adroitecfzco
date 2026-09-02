@@ -32,6 +32,14 @@ const SOURCES = {
   "redmi-k80-pro": "https://www.gsmarena.com/xiaomi_redmi_k80_pro-13524.php",
   "redmi-turbo-4": "https://www.gsmarena.com/xiaomi_redmi_turbo_4-13598.php",
   "poco-x7-pro": "https://www.gsmarena.com/xiaomi_poco_x7_pro-13582.php",
+
+  "galaxy-s25": "https://www.gsmarena.com/samsung_galaxy_s25-13610.php",
+  "galaxy-s25-plus": "https://www.gsmarena.com/samsung_galaxy_s25_plus-13609.php",
+  "galaxy-s25-ultra": "https://www.gsmarena.com/samsung_galaxy_s25_ultra-13322.php",
+  "galaxy-z-fold7": "https://www.gsmarena.com/samsung_galaxy_z_fold7-13826.php",
+  "galaxy-z-flip7": "https://www.gsmarena.com/samsung_galaxy_z_flip7-13712.php",
+  "galaxy-watch8": "https://www.gsmarena.com/samsung_galaxy_watch8-13997.php",
+  "galaxy-watch-ultra-2025": "https://www.gsmarena.com/samsung_galaxy_watch_ultra-13127.php",
 };
 
 function pick(section, ...keys) {

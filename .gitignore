@@ -31,6 +31,10 @@ yarn-error.log*
 .pnpm-debug.log*
 dev.log
 
+# whatsapp test session (contains live session credentials)
+scripts/whatsapp/auth/
+scripts/whatsapp/qr.png
+
 # env files (can opt-in for committing if needed)
 .env*
 

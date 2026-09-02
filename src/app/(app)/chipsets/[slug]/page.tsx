@@ -4,6 +4,7 @@ import { notFound } from "next/navigation";
 import { prisma } from "@/lib/prisma";
 import { getChipsetGeekbenchRollup } from "@/lib/chipsetRealPerf";
 import ChipsetPerformanceChart from "@/components/ChipsetPerformanceChart";
+import BackButton from "@/components/BackButton";
 
 export default async function ChipsetPage({
   params,
@@ -18,6 +19,7 @@ export default async function ChipsetPage({
       include: {
         brand: true,
         devices: { orderBy: { releaseDate: "desc" } },
+        specSources: { orderBy: { fetchedAt: "desc" } },
       },
     }),
     prisma.chipset.findMany({
@@ -47,6 +49,7 @@ export default async function ChipsetPage({
   return (
     <main className="min-h-dvh px-4 pb-16 pt-20 sm:px-6">
       <div className="mx-auto max-w-3xl">
+        <BackButton fallbackHref="/chipsets" />
         <div className="relative mb-6 aspect-[16/9] overflow-hidden rounded-3xl border border-[var(--line)] shadow-sm">
           {heroDevice?.imageUrl ? (
             <>
@@ -80,6 +83,32 @@ export default async function ChipsetPage({
 
         <p className="mb-8 max-w-xl text-base leading-relaxed text-[var(--ink-soft)]">{chipset.highlight}</p>
 
+        {(chipset.competitiveEdge || chipset.strengthTag) && (
+          <div className="surface-card mb-8 rounded-2xl border border-[var(--line)] p-4 shadow-sm">
+            <p className="mb-1.5 text-[11px] font-bold uppercase tracking-wide text-[var(--ink-faint)]">
+              Competitive edge
+            </p>
+            {chipset.strengthTag && (
+              <span className="mb-2 inline-block rounded-full bg-[var(--signal)]/10 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide text-[var(--signal)]">
+                Leads in: {chipset.strengthTag}
+              </span>
+            )}
+            {chipset.competitiveEdge && (
+              <p className="text-sm leading-relaxed text-[var(--ink-soft)]">{chipset.competitiveEdge}</p>
+            )}
+            {chipset.competitiveEdgeSourceUrl && (
+              <a
+                href={chipset.competitiveEdgeSourceUrl}
+                target="_blank"
+                rel="noopener noreferrer nofollow"
+                className="mt-2 inline-block text-[11px] font-medium text-[var(--signal)] hover:underline"
+              >
+                Source: {chipset.competitiveEdgeSourceName ?? "link"}
+              </a>
+            )}
+          </div>
+        )}
+
         <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
           {specs.map((spec) => (
             <div key={spec.label} className="rounded-2xl border border-[var(--line)] bg-[var(--mist)] p-4">
@@ -88,6 +117,29 @@ export default async function ChipsetPage({
             </div>
           ))}
         </div>
+
+        {chipset.specSources.length > 0 && (
+          <div className="mt-8">
+            <h2 className="mb-3 text-sm font-medium uppercase tracking-wide text-[var(--ink-faint)]">
+              What sources say
+            </h2>
+            <ul className="flex flex-col gap-2.5">
+              {chipset.specSources.map((s) => (
+                <li key={s.sourceUrl} className="surface-card rounded-2xl border border-[var(--line)] p-3.5 shadow-sm">
+                  <p className="text-[12.5px] leading-relaxed text-[var(--ink-soft)]">{s.summary}</p>
+                  <a
+                    href={s.sourceUrl}
+                    target="_blank"
+                    rel="noopener noreferrer nofollow"
+                    className="mt-1.5 inline-block text-[11px] font-medium text-[var(--signal)] hover:underline"
+                  >
+                    {s.sourceName}
+                  </a>
+                </li>
+              ))}
+            </ul>
+          </div>
+        )}
 
         <div className="mt-8">
           <ChipsetPerformanceChart

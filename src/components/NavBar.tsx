@@ -8,7 +8,8 @@ import Logomark from "./Logomark";
 
 const NAV_ITEMS = [
   { href: "/", label: "Feed", hint: "Newest chipsets", icon: "feed", color: "#0071e3" },
-  { href: "/catalog", label: "Catalog", hint: "Every device", icon: "catalog", color: "#7c5cfc" },
+  { href: "/devices", label: "Devices", hint: "Every device", icon: "catalog", color: "#7c5cfc" },
+  { href: "/chipsets", label: "Chipsets", hint: "Market trends & specs", icon: "chip", color: "#0891b2" },
   { href: "/compare", label: "Compare", hint: "Power rankings", icon: "compare", color: "#1baf7a" },
   { href: "/me", label: "Profile", hint: "Your saved chips", icon: "profile", color: "#ec4a8a" },
 ] as const;
@@ -225,6 +226,18 @@ function Icon({ name }: { name: string }) {
           <rect x="13" y="4" width="7" height="7" rx="1.4" stroke="currentColor" strokeWidth="1.7" />
           <rect x="4" y="13" width="7" height="7" rx="1.4" stroke="currentColor" strokeWidth="1.7" />
           <rect x="13" y="13" width="7" height="7" rx="1.4" stroke="currentColor" strokeWidth="1.7" />
+        </svg>
+      );
+    case "chip":
+      return (
+        <svg viewBox="0 0 24 24" fill="none" className={common}>
+          <rect x="7" y="7" width="10" height="10" rx="1.6" stroke="currentColor" strokeWidth="1.7" />
+          <path
+            d="M9 3v2.4M12 3v2.4M15 3v2.4M9 18.6V21M12 18.6V21M15 18.6V21M3 9h2.4M3 12h2.4M3 15h2.4M18.6 9H21M18.6 12H21M18.6 15H21"
+            stroke="currentColor"
+            strokeWidth="1.7"
+            strokeLinecap="round"
+          />
         </svg>
       );
     case "compare":

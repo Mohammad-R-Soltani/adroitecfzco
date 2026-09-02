@@ -31,6 +31,15 @@ const nextConfig: NextConfig = {
     ],
     unoptimized: true,
   },
+  async redirects() {
+    return [
+      {
+        source: "/catalog",
+        destination: "/devices",
+        permanent: true,
+      },
+    ];
+  },
 };
 
 export default nextConfig;

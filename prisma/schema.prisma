@@ -14,6 +14,7 @@ enum Role {
 enum BrandSlug {
   apple
   xiaomi
+  samsung
 }
 
 enum DeviceCategory {
@@ -21,6 +22,17 @@ enum DeviceCategory {
   TABLET
   LAPTOP
   WATCH
+  EARBUDS
+}
+
+/// What kind of chip this is — mobile SoCs, laptop SoCs, wearable SoCs and
+/// dedicated audio chips (AirPods' H-series, Galaxy Buds' chips) are not
+/// comparable to each other and are kept in separate lanes in the UI.
+enum ChipsetKind {
+  MOBILE_SOC
+  LAPTOP_SOC
+  WEARABLE_SOC
+  AUDIO_CHIP
 }
 
 model User {
@@ -48,12 +60,13 @@ model Brand {
 }
 
 model Chipset {
-  id            String   @id @default(cuid())
-  slug          String   @unique
-  brand         Brand    @relation(fields: [brandId], references: [id])
+  id            String      @id @default(cuid())
+  slug          String      @unique
+  brand         Brand       @relation(fields: [brandId], references: [id])
   brandId       String
   name          String
   series        String
+  kind          ChipsetKind @default(MOBILE_SOC)
   releaseYear   Int
   processNode   String
   cpuSummary    String
@@ -64,14 +77,44 @@ model Chipset {
   gradientFrom  String
   gradientTo    String
   sourceNote    String
-  featured      Boolean  @default(false)
-  createdAt     DateTime @default(now())
-  updatedAt     DateTime @updatedAt
+  featured      Boolean     @default(false)
+  createdAt     DateTime    @default(now())
+  updatedAt     DateTime    @updatedAt
 
-  devices   Device[]
-  bookmarks Bookmark[]
+  /// One or two sentences on what makes this chip stand out against its
+  /// direct rivals — always tied to a named, checkable source, never a
+  /// house opinion.
+  competitiveEdge           String?
+  competitiveEdgeSourceName String?
+  competitiveEdgeSourceUrl  String?
+
+  /// Short scannable label for the domain this chip actually leads in
+  /// (e.g. "GPU ray tracing", "On-device AI", "Sustained/thermal",
+  /// "Custom silicon"), derived from the same source as competitiveEdge —
+  /// never a marketing buzzword picked without backing evidence.
+  strengthTag String?
+
+  devices     Device[]
+  bookmarks   Bookmark[]
+  specSources ChipsetSpecSource[]
 
   @@unique([brandId, name])
+}
+
+/// A single claim/spec excerpt about a chipset from one named outlet, so the
+/// chipset detail page can show "here's what GSMArena says, here's what the
+/// silicon vendor's own page says" side by side instead of one blended
+/// in-house description.
+model ChipsetSpecSource {
+  id         String   @id @default(cuid())
+  chipset    Chipset  @relation(fields: [chipsetId], references: [id], onDelete: Cascade)
+  chipsetId  String
+  sourceName String // e.g. "GSMArena", "Qualcomm (official)", "AnandTech"
+  sourceUrl  String
+  summary    String // short, verified excerpt/claim from that source
+  fetchedAt  DateTime @default(now())
+
+  @@unique([chipsetId, sourceUrl])
 }
 
 model Device {

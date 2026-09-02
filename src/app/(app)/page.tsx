@@ -4,7 +4,7 @@ import { getIndustryUpdates } from "@/lib/rss";
 import { getChipsetGeekbenchRollup } from "@/lib/chipsetRealPerf";
 import NewsRail from "@/components/NewsRail";
 import FeaturedChipsRail from "@/components/FeaturedChipsRail";
-import ChipsetBrowser from "@/components/ChipsetBrowser";
+import ChipsetTeaserList from "@/components/ChipsetTeaserList";
 import PowerRankSidebar from "@/components/PowerRankSidebar";
 
 export default async function FeedPage() {
@@ -77,7 +77,7 @@ export default async function FeedPage() {
       <div className="mx-auto max-w-7xl px-4 py-5 sm:px-6 sm:py-7">
         <div className="grid grid-cols-1 gap-7 lg:grid-cols-[minmax(0,1fr)_310px]">
           <div className="min-w-0">
-            <ChipsetBrowser
+            <ChipsetTeaserList
               chipsets={chipsets}
               bookmarkedIds={bookmarks.map((b) => b.chipsetId)}
               rollup={Object.fromEntries(rollup)}

@@ -2,6 +2,7 @@ import Link from "next/link";
 import { prisma } from "@/lib/prisma";
 import CompareView, { type CompareDevice } from "@/components/compare/CompareView";
 import type { PickerDevice } from "@/components/compare/DevicePicker";
+import BackButton from "@/components/BackButton";
 
 function specToRecord(spec: Record<string, unknown> | null): Record<string, string | number | null> {
   if (!spec) return {};
@@ -125,6 +126,7 @@ export default async function ComparePage({
   return (
     <main className="min-h-dvh px-4 pb-16 pt-20 sm:px-6">
       <div className="mx-auto max-w-3xl">
+        <BackButton fallbackHref="/" />
         <h1 className="font-display text-2xl font-semibold text-[var(--ink)]">Compare devices</h1>
         <p className="mt-1.5 max-w-xl text-sm text-[var(--ink-soft)]">
           Pick two or three devices for a real, source-backed spec-and-benchmark battle —

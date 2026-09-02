@@ -229,6 +229,21 @@ async function main() {
   });
 
 
+  await prisma.brand.upsert({
+    where: {
+      slug: BrandSlug.samsung,
+    },
+
+    update: {},
+
+    create: {
+      slug: BrandSlug.samsung,
+      name: "Samsung",
+      accent: "#1428A0",
+    },
+  });
+
+
   // ==========================================================
   // Chipsets
   // ==========================================================

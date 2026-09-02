@@ -8,17 +8,19 @@ const CATEGORY_LABELS: Record<DeviceCategory, string> = {
   TABLET: "Tablets",
   LAPTOP: "Laptops",
   WATCH: "Watches",
+  EARBUDS: "Earbuds",
 };
 
-const CATEGORY_ORDER: DeviceCategory[] = ["PHONE", "TABLET", "LAPTOP", "WATCH"];
+const CATEGORY_ORDER: DeviceCategory[] = ["PHONE", "TABLET", "LAPTOP", "WATCH", "EARBUDS"];
 
-export default async function CatalogPage({
+export default async function DevicesPage({
   searchParams,
 }: {
   searchParams: Promise<{ brand?: string }>;
 }) {
   const params = await searchParams;
-  const activeBrand: BrandSlug = params.brand === "xiaomi" ? "xiaomi" : "apple";
+  const activeBrand: BrandSlug =
+    params.brand === "xiaomi" ? "xiaomi" : params.brand === "samsung" ? "samsung" : "apple";
 
   const [brands, devices] = await Promise.all([
     prisma.brand.findMany({ orderBy: { name: "asc" } }),
@@ -39,13 +41,13 @@ export default async function CatalogPage({
   return (
     <main className="min-h-dvh px-4 pb-16 pt-20 sm:px-6">
       <div className="mx-auto max-w-5xl">
-        <h1 className="font-display mb-6 text-2xl font-semibold text-[var(--ink)]">Catalog</h1>
+        <h1 className="font-display mb-6 text-2xl font-semibold text-[var(--ink)]">Devices</h1>
 
         <div className="mb-8 flex gap-2">
           {brands.map((brand) => (
             <Link
               key={brand.id}
-              href={`/catalog?brand=${brand.slug}`}
+              href={`/devices?brand=${brand.slug}`}
               className={`rounded-full border px-4 py-1.5 text-sm font-medium transition ${
                 activeBrand === brand.slug
                   ? "border-[var(--signal)] bg-[var(--signal)] text-white"

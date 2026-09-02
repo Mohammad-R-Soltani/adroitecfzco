@@ -5,12 +5,14 @@ import { prisma } from "@/lib/prisma";
 import { buildDeviceAbout } from "@/lib/deviceCopy";
 import { getChipsetGeekbenchRollup } from "@/lib/chipsetRealPerf";
 import ChipsetPerformanceChart from "@/components/ChipsetPerformanceChart";
+import BackButton from "@/components/BackButton";
 
 const CATEGORY_LABELS: Record<string, string> = {
   PHONE: "Phone",
   TABLET: "Tablet",
   LAPTOP: "Laptop",
   WATCH: "Watch",
+  EARBUDS: "Earbuds",
 };
 
 export default async function DevicePage({
@@ -66,8 +68,9 @@ export default async function DevicePage({
   return (
     <main className="min-h-dvh px-4 pb-16 pt-20 sm:px-6">
       <div className="mx-auto max-w-3xl">
+        <BackButton fallbackHref="/devices" />
         <div className="mb-6 flex items-center gap-2 text-xs text-[var(--ink-faint)]">
-          <Link href={`/catalog?brand=${chipset.brand.slug}`} className="hover:text-[var(--signal)]">
+          <Link href={`/devices?brand=${chipset.brand.slug}`} className="hover:text-[var(--signal)]">
             {chipset.brand.name}
           </Link>
           <span>/</span>
