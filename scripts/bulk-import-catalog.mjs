@@ -229,7 +229,15 @@ async function importDevice(brand, stub) {
   const releaseDate = parseReleaseDate(sections["Launch"]);
   if (!releaseDate) return { skipped: `no release date (${title})` };
 
-  const slug = slugify(title.replace(/^Apple |^Samsung |^Xiaomi /i, ""));
+  // GSMArena titles carry the maker's name ("Apple iPhone 17e"); the catalog's
+  // hand-curated entries don't, and the brand is already shown beside every
+  // device, so it is stripped for consistency — except where the brand word is
+  // genuinely part of the product name ("Apple Watch", "Xiaomi Pad").
+  const KEEPS_BRAND = /^(Apple|Samsung|Xiaomi)\s+(Watch|Pad|Buds|Book)\b/i;
+  const displayName = KEEPS_BRAND.test(title)
+    ? title
+    : title.replace(/^(Apple|Samsung|Xiaomi)\s+/i, "");
+  const slug = slugify(displayName);
   const image = parseImage(html) ?? stub.image;
 
   const existing = await prisma.device.findUnique({ where: { slug } });
@@ -238,7 +246,7 @@ async function importDevice(brand, stub) {
     where: { slug },
     update: {
       chipsetId: chipset.id,
-      name: title,
+      name: displayName,
       category: stub.category ?? "PHONE",
       releaseDate,
       // An image already on file (e.g. a properly-licensed Wikimedia photo from
@@ -248,7 +256,7 @@ async function importDevice(brand, stub) {
     create: {
       slug,
       chipsetId: chipset.id,
-      name: title,
+      name: displayName,
       category: stub.category ?? "PHONE",
       releaseDate,
       imageUrl: image,
