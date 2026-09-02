@@ -178,6 +178,7 @@ model Device {
 
   spec       DeviceSpec?
   benchmarks DeviceBenchmark[]
+  traded     TradedProduct[]
 
   @@unique([chipsetId, name])
 }
@@ -329,6 +330,108 @@ model DeviceSpec {
   sourceName String?
   sourceUrl  String?
   updatedAt  DateTime @updatedAt
+}
+
+/// ---------------------------------------------------------------------------
+/// Commercial data — the company's own trading records, kept in its own set of
+/// tables so it stays separate from the public device catalog. The catalog is
+/// sourced from published specs; everything below is first-party and
+/// confidential, and the two are only ever joined through TradedProduct.device.
+/// ---------------------------------------------------------------------------
+
+/// A product at the grain the stock system actually trades in: model, storage
+/// and colour. Finer than a catalog Device (one Device can cover many SKUs),
+/// and often a model the catalog does not carry at all.
+model TradedProduct {
+  id   String @id @default(cuid())
+  /// Case-normalised key used to merge the source file's inconsistent
+  /// spellings ("Redmi A5" and "REDMI A5" are one product).
+  sku  String @unique
+  name String
+
+  /// Model family with storage and colour stripped ("POCO C71"), for rolling
+  /// variants up into one line on a chart.
+  family    String
+  brandSlug BrandSlug
+  variant   String?
+  colour    String?
+
+  /// Optional link to the catalog, present only where the traded SKU matches a
+  /// device we hold published specs for.
+  device   Device? @relation(fields: [deviceId], references: [id])
+  deviceId String?
+
+  months    DemandMonth[]
+  days      DemandDay[]
+  forecasts DemandForecast[]
+
+  @@index([family])
+  @@index([deviceId])
+}
+
+/// Units and money moved in one calendar month, straight from the stock
+/// ledger. Outward quantity is the demand signal.
+model DemandMonth {
+  id        String        @id @default(cuid())
+  product   TradedProduct @relation(fields: [productId], references: [id], onDelete: Cascade)
+  productId String
+
+  month DateTime
+
+  inwardQty    Int?
+  inwardValue  Float?
+  outwardQty   Int
+  outwardValue Float?
+
+  /// True when the month is only partly covered by the source (the final
+  /// month of an export), so charts can mark it rather than read it as a drop.
+  partialPeriod Boolean @default(false)
+
+  sourceFile String
+
+  @@unique([productId, month])
+  @@index([month])
+}
+
+/// Daily movement, where the source files carry that grain.
+model DemandDay {
+  id        String        @id @default(cuid())
+  product   TradedProduct @relation(fields: [productId], references: [id], onDelete: Cascade)
+  productId String
+
+  date DateTime
+
+  inwardQty    Int?
+  inwardValue  Float?
+  outwardQty   Int
+  outwardValue Float?
+
+  sourceFile String
+
+  @@unique([productId, date])
+  @@index([date])
+}
+
+/// A forecast the company produced, kept with the method and its backtest
+/// error so a reader can weigh it rather than take it as fact.
+model DemandForecast {
+  id        String        @id @default(cuid())
+  product   TradedProduct @relation(fields: [productId], references: [id], onDelete: Cascade)
+  productId String
+
+  periodStart DateTime
+  periodEnd   DateTime
+
+  forecastQty   Int
+  lowerBound    Int?
+  upperBound    Int?
+  confidence    Float?
+  method        String
+  backtestWape  Float?
+
+  sourceFile String
+
+  @@unique([productId, periodStart, periodEnd])
 }
 
 model Bookmark {
