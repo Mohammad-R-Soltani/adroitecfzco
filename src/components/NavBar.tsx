@@ -10,7 +10,9 @@ const NAV_ITEMS = [
   { href: "/", label: "Feed", hint: "Newest chipsets", icon: "feed", color: "#0071e3" },
   { href: "/devices", label: "Devices", hint: "Every device", icon: "catalog", color: "#7c5cfc" },
   { href: "/chipsets", label: "Chipsets", hint: "Market trends & specs", icon: "chip", color: "#0891b2" },
+  { href: "/insights", label: "Insights", hint: "Value & uplift charts", icon: "insights", color: "#d4553f" },
   { href: "/compare", label: "Compare", hint: "Power rankings", icon: "compare", color: "#1baf7a" },
+  { href: "/learn", label: "Learn", hint: "Chip basics & talking points", icon: "learn", color: "#6b7f3a" },
   { href: "/me", label: "Profile", hint: "Your saved chips", icon: "profile", color: "#ec4a8a" },
 ] as const;
 
@@ -226,6 +228,38 @@ function Icon({ name }: { name: string }) {
           <rect x="13" y="4" width="7" height="7" rx="1.4" stroke="currentColor" strokeWidth="1.7" />
           <rect x="4" y="13" width="7" height="7" rx="1.4" stroke="currentColor" strokeWidth="1.7" />
           <rect x="13" y="13" width="7" height="7" rx="1.4" stroke="currentColor" strokeWidth="1.7" />
+        </svg>
+      );
+    case "learn":
+      return (
+        <svg viewBox="0 0 24 24" fill="none" className={common}>
+          <path
+            d="M4 5.5A1.5 1.5 0 015.5 4H10a2 2 0 012 2v13a2 2 0 00-2-1.6H4V5.5z"
+            stroke="currentColor"
+            strokeWidth="1.7"
+            strokeLinejoin="round"
+          />
+          <path
+            d="M20 5.5A1.5 1.5 0 0018.5 4H14a2 2 0 00-2 2v13a2 2 0 012-1.6h6V5.5z"
+            stroke="currentColor"
+            strokeWidth="1.7"
+            strokeLinejoin="round"
+          />
+        </svg>
+      );
+    case "insights":
+      return (
+        <svg viewBox="0 0 24 24" fill="none" className={common}>
+          <path d="M4 19h16" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" />
+          <path
+            d="M5 15l4.5-5 3.5 3 5.5-7"
+            stroke="currentColor"
+            strokeWidth="1.7"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          />
+          <circle cx="9.5" cy="10" r="1.5" fill="currentColor" />
+          <circle cx="18.5" cy="6" r="1.5" fill="currentColor" />
         </svg>
       );
     case "chip":

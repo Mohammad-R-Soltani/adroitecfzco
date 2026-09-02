@@ -269,6 +269,10 @@ model DeviceSpec {
   price  String?
 
   /// Parsed numbers, so the compare view can rank and draw bars.
+  /// priceEur is the EUR figure parsed out of the free-text `price` string —
+  /// one consistent currency so the value-for-money chart can plot devices
+  /// against each other. Null whenever no EUR price was published.
+  priceEur        Float?
   displayInches   Float?
   refreshRateHz   Int?
   batteryMah      Int?

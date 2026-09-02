@@ -2,6 +2,7 @@ import Link from "next/link";
 import { prisma } from "@/lib/prisma";
 import { BrandSlug, DeviceCategory } from "@prisma/client";
 import DeviceCard from "@/components/DeviceCard";
+import RequirementMatcher, { type MatcherDevice } from "@/components/devices/RequirementMatcher";
 
 const CATEGORY_LABELS: Record<DeviceCategory, string> = {
   PHONE: "Phones",
@@ -22,7 +23,7 @@ export default async function DevicesPage({
   const activeBrand: BrandSlug =
     params.brand === "xiaomi" ? "xiaomi" : params.brand === "samsung" ? "samsung" : "apple";
 
-  const [brands, devices] = await Promise.all([
+  const [brands, devices, allDevices] = await Promise.all([
     prisma.brand.findMany({ orderBy: { name: "asc" } }),
     prisma.device.findMany({
       where: { chipset: { brand: { slug: activeBrand } } },
@@ -31,7 +32,49 @@ export default async function DevicesPage({
         chipset: { select: { name: true, slug: true, gradientFrom: true, gradientTo: true } },
       },
     }),
+    // The matcher searches the whole catalog, not just the brand tab in view —
+    // a buyer's requirements rarely come with a brand attached.
+    prisma.device.findMany({
+      select: {
+        slug: true,
+        name: true,
+        category: true,
+        chipset: { select: { name: true, brand: { select: { name: true, accent: true } } } },
+        spec: {
+          select: {
+            batteryMah: true,
+            chargingWatts: true,
+            displayInches: true,
+            refreshRateHz: true,
+            mainCameraMp: true,
+            priceEur: true,
+          },
+        },
+        benchmarks: {
+          where: { family: "GEEKBENCH_6", metric: "MULTI_CORE" },
+          orderBy: { value: "desc" },
+          take: 1,
+          select: { value: true },
+        },
+      },
+    }),
   ]);
+
+  const matcherDevices: MatcherDevice[] = allDevices.map((d) => ({
+    slug: d.slug,
+    name: d.name,
+    category: d.category,
+    brandName: d.chipset.brand.name,
+    brandAccent: d.chipset.brand.accent,
+    chipsetName: d.chipset.name,
+    batteryMah: d.spec?.batteryMah ?? null,
+    chargingWatts: d.spec?.chargingWatts ?? null,
+    displayInches: d.spec?.displayInches ?? null,
+    refreshRateHz: d.spec?.refreshRateHz ?? null,
+    mainCameraMp: d.spec?.mainCameraMp ?? null,
+    priceEur: d.spec?.priceEur ?? null,
+    score: d.benchmarks[0]?.value ?? null,
+  }));
 
   const grouped = CATEGORY_ORDER.map((category) => ({
     category,
@@ -42,6 +85,10 @@ export default async function DevicesPage({
     <main className="min-h-dvh px-4 pb-16 pt-20 sm:px-6">
       <div className="mx-auto max-w-5xl">
         <h1 className="font-display mb-6 text-2xl font-semibold text-[var(--ink)]">Devices</h1>
+
+        <div className="mb-8">
+          <RequirementMatcher devices={matcherDevices} />
+        </div>
 
         <div className="mb-8 flex gap-2">
           {brands.map((brand) => (
