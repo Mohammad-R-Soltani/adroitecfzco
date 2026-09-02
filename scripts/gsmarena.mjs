@@ -1,7 +1,7 @@
 const UA =
   "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0 Safari/537.36";
 
-export async function fetchDevicePage(url, { retries = 4, baseDelayMs = 4000 } = {}) {
+export async function fetchDevicePage(url, { retries = 6, baseDelayMs = 8000 } = {}) {
   for (let attempt = 0; attempt <= retries; attempt++) {
     const res = await fetch(url, { headers: { "User-Agent": UA } });
     if (res.status === 429 && attempt < retries) {
@@ -115,7 +115,10 @@ export function parsePerformanceLine(text) {
     }
   }
 
-  const gbMatch = text.match(/GeekBench:\s*(\d{3,6})\s*\(v(\d)\)/i);
+  // GSMArena writes minor versions on older entries ("(v5.1)"), so the major
+  // version is captured and any ".x" suffix tolerated — without this, every
+  // Geekbench 5.1 score is silently dropped instead of being recorded.
+  const gbMatch = text.match(/GeekBench:\s*(\d{3,6})\s*\(v(\d)(?:\.\d+)?\)/i);
   if (gbMatch) {
     const family = gbMatch[2] === "6" ? "GEEKBENCH_6" : gbMatch[2] === "5" ? "GEEKBENCH_5" : null;
     if (family) rows.push({ family, metric: "MULTI_CORE", value: parseFloat(gbMatch[1]) });
@@ -137,4 +140,42 @@ export function parsePerformanceLine(text) {
   }
 
   return rows;
+}
+
+/** The device's display name, straight from the page heading. */
+export function parseTitle(html) {
+  const m = html.match(/<h1[^>]*class="specs-phone-name-title"[^>]*>([^<]+)</);
+  return m ? m[1].trim() : null;
+}
+
+/** The main product photo GSMArena shows at the top of a device page. */
+export function parseImage(html) {
+  const m = html.match(/<div class="specs-photo-main">\s*<a[^>]*>\s*<img[^>]*src=([^\s>]+)/i);
+  if (!m) return null;
+  return m[1].replace(/^["']|["']$/g, "");
+}
+
+/**
+ * Reduces GSMArena's chipset string to the marketing name a trader would use:
+ *   "Qualcomm SM8550-AC Snapdragon 8 Gen 2 (4 nm)" -> "Snapdragon 8 Gen 2"
+ *   "Apple A16 Bionic (4 nm)"                      -> "A16 Bionic"
+ *   "Mediatek Dimensity 8400 Ultra (4 nm)"         -> "Dimensity 8400 Ultra"
+ * Returns null when nothing recognisable is left, so the caller can skip
+ * rather than invent a chipset.
+ */
+export function normalizeChipsetName(raw) {
+  if (!raw) return null;
+  let name = raw
+    .replace(/\s*\([^)]*\)\s*$/, "")          // trailing "(4 nm)"
+    .replace(/^(Qualcomm|Mediatek|MediaTek|Apple|Samsung|Google|Unisoc)\s+/i, "")
+    .replace(/^S[MD]\d{3,4}[A-Z0-9-]*\s+/i, "") // Qualcomm part numbers
+    .replace(/^Exynos\s+(\d+)\s+\([^)]*\)/i, "Exynos $1")
+    .trim();
+  return name.length ? name : null;
+}
+
+/** Process node ("4 nm") as printed in the chipset string, when present. */
+export function parseProcessNode(raw) {
+  const m = raw?.match(/\((\d+(?:\.\d+)?)\s*nm\)/i);
+  return m ? `${m[1]}nm` : null;
 }
