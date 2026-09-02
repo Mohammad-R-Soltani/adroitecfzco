@@ -77,13 +77,16 @@ export default async function InsightsPage() {
 
         <section className="surface-card mt-6 rounded-2xl border border-[var(--line)] p-5 shadow-sm">
           <h2 className="font-display text-lg font-semibold text-[var(--ink)]">
-            Value map — price vs. performance
+            How much speed per euro?
           </h2>
           <p className="mt-1 max-w-2xl text-sm text-[var(--ink-soft)]">
-            Every device that has both a published launch price and a verified Geekbench 6
-            multi-core score. Devices further up and to the left give more performance per euro.
-            Prices are launch RRP as listed by GSMArena, not today&apos;s trade price — use them
-            for positioning, not quoting.
+            Each numbered dot is one device: how much it cost at launch, against how fast it
+            tested. Dots higher up are faster; dots further left are cheaper — so the best value
+            sits top-left. The list beside the chart ranks them.
+          </p>
+          <p className="mt-1.5 text-[11.5px] text-[var(--ink-faint)]">
+            Launch RRP as listed by GSMArena, not today&apos;s trade price — use for positioning,
+            not quoting.
           </p>
           <div className="mt-5">
             <ValueMapChart points={valuePoints} />
@@ -92,12 +95,15 @@ export default async function InsightsPage() {
 
         <section className="surface-card mt-6 rounded-2xl border border-[var(--line)] p-5 shadow-sm">
           <h2 className="font-display text-lg font-semibold text-[var(--ink)]">
-            Generation over generation
+            Is the new model really faster?
           </h2>
           <p className="mt-1 max-w-2xl text-sm text-[var(--ink-soft)]">
-            How much real multi-core performance each new generation actually added, within the
-            same product line. Only Geekbench 6 scores are compared against each other — older
-            Geekbench 5 results are never mixed in.
+            Each row compares one phone with the model it replaced, using the same benchmark on
+            both. The percentage is how much faster the newer one is.
+          </p>
+          <p className="mt-1.5 text-[11.5px] text-[var(--ink-faint)]">
+            Geekbench 6 multi-core, as tested by GSMArena. Geekbench 5 scores are never compared
+            against Geekbench 6 ones.
           </p>
           <div className="mt-5">
             <GenerationalUpliftChart lines={upliftLines} />
