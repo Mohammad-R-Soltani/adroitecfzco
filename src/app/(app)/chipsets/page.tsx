@@ -4,11 +4,12 @@ import { getCurrentUser } from "@/lib/dal";
 import { getChipsetGeekbenchRollup } from "@/lib/chipsetRealPerf";
 import ChipsetBrowser from "@/components/ChipsetBrowser";
 import MarketTrendChart, { type TrendPoint } from "@/components/chipsets/MarketTrendChart";
+import DomainMatrix, { type MatrixChipset } from "@/components/chipsets/DomainMatrix";
 
 export default async function ChipsetsPage() {
   const user = await getCurrentUser();
 
-  const [chipsets, bookmarks, rollup] = await Promise.all([
+  const [chipsets, bookmarks, rollup, domainRaw] = await Promise.all([
     prisma.chipset.findMany({
       include: {
         brand: { select: { name: true, accent: true } },
@@ -22,7 +23,34 @@ export default async function ChipsetsPage() {
       ? prisma.bookmark.findMany({ where: { userId: user.id }, select: { chipsetId: true } })
       : Promise.resolve([]),
     getChipsetGeekbenchRollup(),
+    prisma.chipset.findMany({
+      where: { domains: { some: {} } },
+      select: {
+        slug: true,
+        name: true,
+        releaseYear: true,
+        brand: { select: { name: true } },
+        domains: {
+          select: { domain: true, level: true, evidence: true, sourceName: true, sourceUrl: true },
+        },
+      },
+      orderBy: [{ releaseYear: "desc" }, { name: "asc" }],
+    }),
   ]);
+
+  const domainChipsets: MatrixChipset[] = domainRaw.map((c) => ({
+    slug: c.slug,
+    name: c.name,
+    brandName: c.brand.name,
+    releaseYear: c.releaseYear,
+    cells: c.domains.map((d) => ({
+      domain: d.domain,
+      level: d.level,
+      evidence: d.evidence,
+      sourceName: d.sourceName,
+      sourceUrl: d.sourceUrl,
+    })),
+  }));
 
   const trendMap = new Map<string, TrendPoint>();
   for (const chipset of chipsets) {
@@ -71,6 +99,20 @@ export default async function ChipsetsPage() {
           </p>
           <div className="mt-5">
             <MarketTrendChart points={trendPoints} />
+          </div>
+        </section>
+
+        <section className="surface-card mt-6 rounded-2xl border border-[var(--line)] p-5 shadow-sm">
+          <h2 className="font-display text-lg font-semibold text-[var(--ink)]">
+            What each chip is actually good at
+          </h2>
+          <p className="mt-1 max-w-2xl text-sm text-[var(--ink-soft)]">
+            Every filled cell is a claim a named outlet published about that chip in that
+            workload — tap one to read it and follow the source. A blank cell means nothing
+            credible was published, not that the chip is weak there.
+          </p>
+          <div className="mt-5">
+            <DomainMatrix chipsets={domainChipsets} />
           </div>
         </section>
 

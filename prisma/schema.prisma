@@ -35,6 +35,27 @@ enum ChipsetKind {
   AUDIO_CHIP
 }
 
+/// The workload areas a chip can be strong in. Fixed list rather than free
+/// text so chips stay comparable in the strength matrix.
+enum ChipsetDomain {
+  ON_DEVICE_AI
+  GAMING_GPU
+  RAY_TRACING
+  CAMERA_ISP
+  POWER_EFFICIENCY
+  SUSTAINED_PERFORMANCE
+  RAW_CPU
+  CONNECTIVITY
+}
+
+/// How strong the sourced evidence says a chip is in a domain. There is
+/// deliberately no "weak" level — absence of a row means nothing credible was
+/// published, not that the chip is bad at it.
+enum DomainLevel {
+  LEADING
+  STRONG
+}
+
 model User {
   id           String    @id @default(cuid())
   username     String    @unique
@@ -97,8 +118,29 @@ model Chipset {
   devices     Device[]
   bookmarks   Bookmark[]
   specSources ChipsetSpecSource[]
+  domains     ChipsetDomainStrength[]
 
   @@unique([brandId, name])
+}
+
+/// One sourced claim that a chipset is strong in one workload area. Kept as
+/// rows rather than a list on Chipset so each claim carries its own evidence
+/// and citation — the strength matrix is only ever drawn from these.
+model ChipsetDomainStrength {
+  id        String  @id @default(cuid())
+  chipset   Chipset @relation(fields: [chipsetId], references: [id], onDelete: Cascade)
+  chipsetId String
+
+  domain ChipsetDomain
+  level  DomainLevel
+
+  /// What the source actually says, in one line — the reason this row exists.
+  evidence   String
+  sourceName String
+  sourceUrl  String
+
+  @@unique([chipsetId, domain])
+  @@index([domain, level])
 }
 
 /// A single claim/spec excerpt about a chipset from one named outlet, so the
