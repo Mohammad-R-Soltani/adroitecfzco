@@ -376,6 +376,7 @@ model TradedProduct {
   months    DemandMonth[]
   days      DemandDay[]
   forecasts DemandForecast[]
+  financials ProductFinancials[]
 
   @@index([family])
   @@index([deviceId])
@@ -422,6 +423,42 @@ model DemandDay {
 
   @@unique([productId, date])
   @@index([date])
+}
+
+/// What a product cost and sold for over a period, from the stock ledger's own
+/// summary. Rates are the ledger's effective (weighted-average) rates for the
+/// period, not a list price — so they move with the mix of batches traded.
+model ProductFinancials {
+  id        String        @id @default(cuid())
+  product   TradedProduct @relation(fields: [productId], references: [id], onDelete: Cascade)
+  productId String
+
+  periodStart DateTime
+  periodEnd   DateTime
+
+  inwardQty     Int?
+  purchaseRate  Float?
+  inwardValue   Float?
+
+  outwardQty  Int?
+  saleRate    Float?
+  outwardValue Float?
+
+  /// Cost of the goods actually sold in the period. This is what the ledger
+  /// measures profit against — not `purchaseRate`, which is the average rate
+  /// of what was *bought* in the period and may cover different units
+  /// entirely. Comparing saleRate to purchaseRate can show a loss on a trade
+  /// that was in fact profitable, so charts use costPerUnitSold instead.
+  consumptionValue Float?
+  costPerUnitSold  Float?
+
+  grossProfit   Float?
+  marginPercent Float?
+  closingQty    Int?
+
+  sourceFile String
+
+  @@unique([productId, periodStart, periodEnd])
 }
 
 /// A forecast the company produced, kept with the method and its backtest

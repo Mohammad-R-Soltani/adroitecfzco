@@ -1,13 +1,21 @@
-import { requireSalesAccess, getSalesOverview, getFamilyDemand, getForecasts } from "@/lib/salesDal";
+import {
+  requireSalesAccess,
+  getSalesOverview,
+  getFamilyDemand,
+  getForecasts,
+  getPriceAndDemand,
+} from "@/lib/salesDal";
 import DemandTrendChart from "@/components/sales/DemandTrendChart";
+import PriceDemandChart from "@/components/sales/PriceDemandChart";
 
 export default async function SalesDashboard() {
   await requireSalesAccess();
 
-  const [overview, families, forecasts] = await Promise.all([
+  const [overview, families, forecasts, priceDemand] = await Promise.all([
     getSalesOverview(),
     getFamilyDemand(14),
     getForecasts(15),
+    getPriceAndDemand(3, 15),
   ]);
 
   return (
@@ -37,6 +45,20 @@ export default async function SalesDashboard() {
           </p>
           <div className="mt-5">
             <DemandTrendChart series={families} />
+          </div>
+        </section>
+
+        <section className="surface-card mt-6 rounded-2xl border border-[var(--line)] p-5 shadow-sm">
+          <h2 className="font-display text-lg font-semibold text-[var(--ink)]">
+            What each product sells for, and how many move
+          </h2>
+          <p className="mt-1 max-w-2xl text-sm text-[var(--ink-soft)]">
+            The price bar shows cost of goods in grey and the gross margin on top, so the
+            coloured part is what the trade actually earned. Change the window to compare
+            products by their first months on sale rather than by how long they have existed.
+          </p>
+          <div className="mt-5">
+            <PriceDemandChart rows={priceDemand} />
           </div>
         </section>
 

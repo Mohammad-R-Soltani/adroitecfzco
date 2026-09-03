@@ -126,6 +126,42 @@ export async function getSalesOverview() {
   };
 }
 
+/**
+ * Price beside demand, per product.
+ *
+ * `windowQty` counts only the product's first N months with any trade, so
+ * products that launched at different times can be compared on equal footing —
+ * a product on sale for a year would otherwise always outsell a recent one.
+ */
+export async function getPriceAndDemand(windowMonths = 3, limit = 15) {
+  await requireSalesAccess();
+
+  const products = await prisma.tradedProduct.findMany({
+    where: { financials: { some: { saleRate: { not: null } } } },
+    include: {
+      financials: true,
+      months: { orderBy: { month: "asc" } },
+    },
+  });
+
+  return products
+    .map((p) => {
+      const fin = p.financials[0];
+      const active = p.months.filter((m) => m.outwardQty > 0);
+      return {
+        name: p.name,
+        saleRate: fin?.saleRate ?? 0,
+        costPerUnitSold: fin?.costPerUnitSold ?? null,
+        marginPercent: fin?.marginPercent ?? null,
+        qty: p.months.reduce((sum, m) => sum + m.outwardQty, 0),
+        windowQty: active.slice(0, windowMonths).reduce((sum, m) => sum + m.outwardQty, 0),
+      };
+    })
+    .filter((r) => r.saleRate > 0 && r.qty > 0)
+    .sort((a, b) => b.qty - a.qty)
+    .slice(0, limit);
+}
+
 /** The company's own forecasts, with the method and backtest error attached. */
 export async function getForecasts(limit = 25) {
   await requireSalesAccess();
