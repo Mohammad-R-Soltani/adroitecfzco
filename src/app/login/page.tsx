@@ -1,5 +1,5 @@
 import LoginForm from "./LoginForm";
-import SalesLoginForm from "@/app/sales/login/SalesLoginForm";
+import SalesLoginForm from "./SalesLoginForm";
 import Logomark from "@/components/Logomark";
 
 /**

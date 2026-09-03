@@ -1,7 +1,7 @@
 "use client";
 
 import { useActionState } from "react";
-import { salesLogin, type SalesLoginState } from "./actions";
+import { salesLogin, type SalesLoginState } from "./salesActions";
 
 const initialState: SalesLoginState = {};
 const inputClass =

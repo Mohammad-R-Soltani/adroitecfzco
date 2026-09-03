@@ -23,9 +23,9 @@ export const getSalesUser = cache(async () => {
 
 export async function requireSalesAccess() {
   const user = await getSalesUser();
-  // Sent to the sales sign-in rather than the catalog's, so a catalog-only
-  // account is told plainly that this module needs its own grant.
-  if (!user) redirect("/sales/login");
+  // Both modules sign in from the same page, and the sales card there states
+  // plainly that it needs its own grant.
+  if (!user) redirect("/login");
   return user;
 }
 
