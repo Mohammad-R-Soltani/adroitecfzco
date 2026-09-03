@@ -32,10 +32,22 @@ function requiredTokens(name) {
 const NOT_A_PRODUCT_PHOTO =
   /(chart|diagram|graph|logo|wordmark|icon|screenshot|comparison|对比|价格|数据|infographic|timeline|map|advertisement|billboard|store|queue|line up|packaging|box art)/i;
 
-function titleMatches(title, tokens) {
+// Words that distinguish one model from another in the same family. If the
+// candidate has one the device does not, it is a different product — "Xiaomi
+// 13" must not accept a photo of the "Xiaomi 13 Ultra".
+const MODEL_QUALIFIERS = ["ultra", "pro", "max", "plus", "lite", "mini", "fe", "air"];
+
+function titleMatches(title, tokens, deviceName) {
   if (NOT_A_PRODUCT_PHOTO.test(title)) return false;
   const haystack = title.toLowerCase().replace(/[_\-()]/g, " ");
-  return tokens.every((t) => haystack.includes(t));
+  if (!tokens.every((t) => haystack.includes(t))) return false;
+
+  const deviceWords = new Set(deviceName.toLowerCase().split(/[^a-z0-9]+/));
+  const candidateWords = new Set(haystack.split(/[^a-z0-9]+/));
+  for (const q of MODEL_QUALIFIERS) {
+    if (candidateWords.has(q) && !deviceWords.has(q)) return false;
+  }
+  return true;
 }
 
 async function findCommonsImage(deviceName) {
@@ -64,7 +76,7 @@ async function findCommonsImage(deviceName) {
     const info = page?.imageinfo?.[0];
     if (!info?.thumburl) continue;
     const title = String(page.title ?? "").replace(/^File:/, "");
-    if (!titleMatches(title, tokens)) continue;
+    if (!titleMatches(title, tokens, deviceName)) continue;
 
     const meta = info.extmetadata ?? {};
     return {
