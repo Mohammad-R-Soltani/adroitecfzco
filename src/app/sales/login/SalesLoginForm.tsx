@@ -12,12 +12,14 @@ export default function SalesLoginForm() {
 
   return (
     <form action={formAction} className="flex w-full flex-col gap-4">
+      {/* Ids are prefixed because this form now shares a page with the catalog
+          sign-in — duplicate ids would point both labels at the same input. */}
       <div className="flex flex-col gap-1.5">
-        <label htmlFor="username" className="text-sm font-medium text-[var(--ink-soft)]">
+        <label htmlFor="sales-username" className="text-sm font-medium text-[var(--ink-soft)]">
           Username
         </label>
         <input
-          id="username"
+          id="sales-username"
           name="username"
           type="text"
           autoComplete="username"
@@ -27,11 +29,11 @@ export default function SalesLoginForm() {
         />
       </div>
       <div className="flex flex-col gap-1.5">
-        <label htmlFor="password" className="text-sm font-medium text-[var(--ink-soft)]">
+        <label htmlFor="sales-password" className="text-sm font-medium text-[var(--ink-soft)]">
           Password
         </label>
         <input
-          id="password"
+          id="sales-password"
           name="password"
           type="password"
           autoComplete="current-password"
