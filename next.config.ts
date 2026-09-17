@@ -13,6 +13,8 @@ const nextConfig: NextConfig = {
         hostname: "commons.wikimedia.org",
         pathname: "/**",
       },
+      // GSMArena serves the same photos from either host, and which one a URL
+      // carries is not predictable, so both are allowed.
       {
         protocol: "https",
         hostname: "fdn.gsmarena.com",
@@ -20,13 +22,13 @@ const nextConfig: NextConfig = {
       },
       {
         protocol: "https",
-        hostname: "www.apple.com",
+        hostname: "fdn2.gsmarena.com",
         pathname: "/**",
       },
       {
-      protocol: "https",
-      hostname: "commons.wikimedia.org",
-      pathname: "/**",
+        protocol: "https",
+        hostname: "www.apple.com",
+        pathname: "/**",
       },
     ],
     unoptimized: true,

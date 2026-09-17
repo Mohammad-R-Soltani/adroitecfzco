@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { useMemo, useState } from "react";
+import ChartVerdict, { type Finding } from "@/components/insights/ChartVerdict";
 
 export type DomainCell = {
   domain: string;
@@ -52,12 +53,56 @@ export default function DomainMatrix({ chipsets }: { chipsets: MatrixChipset[] }
     return { rows, columns: DOMAINS.filter((d) => used.has(d.key)) };
   }, [chipsets]);
 
+  // Who leads each area, and who leads the most areas — the two questions the
+  // grid answers but made the reader count cells to find.
+  const leaders = useMemo(
+    () =>
+      columns.map((d) => ({
+        domain: d,
+        chipsets: rows.filter((c) => c.cells.some((cell) => cell.domain === d.key && cell.level === "LEADING")),
+      })),
+    [columns, rows],
+  );
+
+  const findings = useMemo<Finding[]>(() => {
+    if (rows.length === 0) return [];
+    const leadCount = rows
+      .map((c) => ({ chipset: c, n: c.cells.filter((cell) => cell.level === "LEADING").length }))
+      .sort((a, b) => b.n - a.n);
+    const top = leadCount[0];
+    if (!top || top.n === 0) return [];
+
+    const tied = leadCount.filter((x) => x.n === top.n);
+    const documented = columns.length;
+
+    return [
+      {
+        label: "Leads the most areas",
+        headline: tied.length > 1 ? `${tied.length}-way tie` : top.chipset.name,
+        detail:
+          tied.length > 1
+            ? tied.map((t) => t.chipset.name).join(", ")
+            : `${top.n} of ${documented} area${documented === 1 ? "" : "s"}`,
+      },
+      {
+        label: "Areas covered",
+        headline: `${documented} of ${DOMAINS.length}`,
+        detail: `across ${rows.length} chipset${rows.length === 1 ? "" : "s"} with published evidence`,
+      },
+    ];
+  }, [rows, columns]);
+
   if (rows.length === 0) {
     return <p className="text-sm text-[var(--ink-faint)]">No sourced domain strengths recorded yet.</p>;
   }
 
   return (
     <div>
+      <ChartVerdict
+        findings={findings}
+        note="&ldquo;Leads&rdquo; means a named outlet put that chip first in that workload; &ldquo;Strong&rdquo; means it was rated competitive but not first. A blank is silence in the sources, not a weakness."
+      />
+
       <div className="overflow-x-auto">
         <table className="w-full min-w-[560px] border-separate border-spacing-[2px]">
           <thead>
@@ -153,12 +198,28 @@ export default function DomainMatrix({ chipsets }: { chipsets: MatrixChipset[] }
         </div>
       )}
 
-      <div className="mt-3 flex flex-wrap gap-x-4 gap-y-1">
-        {columns.map((d) => (
-          <span key={d.key} className="text-[10.5px] text-[var(--ink-faint)]">
-            <span className="font-semibold text-[var(--ink-soft)]">{d.short}</span> — {d.label}
-          </span>
-        ))}
+      <div className="mt-4 rounded-xl border border-[var(--line)] p-3">
+        <p className="text-[10px] font-bold uppercase tracking-wide text-[var(--ink-faint)]">
+          Who leads each area
+        </p>
+        <dl className="mt-2 grid gap-x-6 gap-y-1.5 sm:grid-cols-2">
+          {leaders.map(({ domain, chipsets }) => (
+            <div key={domain.key} className="flex items-baseline justify-between gap-3">
+              <dt className="shrink-0 text-[11px] text-[var(--ink-soft)]">
+                <span className="font-semibold text-[var(--ink)]">{domain.short}</span> — {domain.label}
+              </dt>
+              {/* Wraps rather than truncates: a leader list that cuts off mid-name
+                  answers the question with the wrong chip. */}
+              <dd className="min-w-0 text-right text-[11px] font-semibold leading-snug text-[var(--ink)]">
+                {chipsets.length === 0 ? (
+                  <span className="font-normal text-[var(--ink-faint)]">no clear leader published</span>
+                ) : (
+                  chipsets.map((c) => c.name).join(", ")
+                )}
+              </dd>
+            </div>
+          ))}
+        </dl>
       </div>
     </div>
   );

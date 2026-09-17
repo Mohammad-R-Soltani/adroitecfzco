@@ -96,12 +96,35 @@ export async function getFamilyDemand(limit = 12) {
     .map(([family, months]) => ({
       family,
       total: [...months.values()].reduce((a, b) => a + b, 0),
-      months: [...months.entries()]
-        .map(([month, qty]) => ({ month, qty }))
-        .sort((a, b) => a.month.localeCompare(b.month)),
+      // The ledger only ever writes a row when something moved — a month
+      // with zero units sold simply has no row, rather than a row of 0. Left
+      // as-is, the chart draws a straight line from the month before a gap
+      // to the month after, which reads as smooth, continuing demand and
+      // hides what was actually a stockout or a dead month. Filling every
+      // calendar month between the family's first and last sale with an
+      // explicit 0 makes that dip visible, and keeps "months since first
+      // sale" numbering true to actual elapsed months instead of just
+      // counting how many rows happened to exist.
+      months: fillMonthlyGaps(months),
     }))
     .sort((a, b) => b.total - a.total)
     .slice(0, limit);
+}
+
+function fillMonthlyGaps(months: Map<string, number>): { month: string; qty: number }[] {
+  const keys = [...months.keys()].sort();
+  if (keys.length === 0) return [];
+
+  const out: { month: string; qty: number }[] = [];
+  let cursor = new Date(keys[0] + "T00:00:00Z");
+  const end = new Date(keys[keys.length - 1] + "T00:00:00Z");
+
+  while (cursor <= end) {
+    const key = cursor.toISOString().slice(0, 10);
+    out.push({ month: key, qty: months.get(key) ?? 0 });
+    cursor = new Date(Date.UTC(cursor.getUTCFullYear(), cursor.getUTCMonth() + 1, 1));
+  }
+  return out;
 }
 
 /** Headline figures for the sales landing page. */
@@ -139,7 +162,13 @@ export async function getPriceAndDemand(windowMonths = 3, limit = 15) {
   const products = await prisma.tradedProduct.findMany({
     where: { financials: { some: { saleRate: { not: null } } } },
     include: {
-      financials: true,
+      // Every product currently has exactly one financials row (one Stock
+      // Summary period), so `[0]` happens to be safe today — but the model
+      // carries a periodStart/periodEnd precisely because more than one was
+      // expected eventually. Ordering explicitly means a second imported
+      // period silently ranks by likely relevance instead of whatever order
+      // Postgres felt like returning, which is never guaranteed.
+      financials: { orderBy: { periodEnd: "desc" } },
       months: { orderBy: { month: "asc" } },
     },
   });
@@ -160,6 +189,38 @@ export async function getPriceAndDemand(windowMonths = 3, limit = 15) {
     .filter((r) => r.saleRate > 0 && r.qty > 0)
     .sort((a, b) => b.qty - a.qty)
     .slice(0, limit);
+}
+
+/**
+ * Every product that sold below what its goods cost, across the whole ledger.
+ *
+ * The price/demand chart ranks by units sold and stops at fifteen rows, which
+ * means a product can lose money on every unit and never appear — the chart
+ * showed nothing but healthy margins while eleven products were underwater.
+ * This deliberately ignores the volume ranking: a loss is worth surfacing
+ * whether it happened on four units or four thousand.
+ */
+export async function getLossMakingProducts() {
+  await requireSalesAccess();
+
+  const rows = await prisma.productFinancials.findMany({
+    where: { saleRate: { not: null }, costPerUnitSold: { not: null } },
+    include: { product: { select: { name: true, months: { select: { outwardQty: true } } } } },
+    orderBy: { periodEnd: "desc" },
+  });
+
+  return rows
+    .filter((r) => r.costPerUnitSold! > r.saleRate!)
+    .map((r) => ({
+      name: r.product.name,
+      saleRate: r.saleRate!,
+      costPerUnitSold: r.costPerUnitSold!,
+      lossPerUnit: r.costPerUnitSold! - r.saleRate!,
+      marginPercent: r.marginPercent,
+      unitsSold: r.product.months.reduce((sum, m) => sum + m.outwardQty, 0),
+    }))
+    .map((r) => ({ ...r, totalLoss: r.lossPerUnit * r.unitsSold }))
+    .sort((a, b) => b.totalLoss - a.totalLoss);
 }
 
 /** The company's own forecasts, with the method and backtest error attached. */

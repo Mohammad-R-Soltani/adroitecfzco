@@ -70,7 +70,7 @@ export default async function DevicePage({
       <div className="mx-auto max-w-3xl">
         <BackButton fallbackHref="/devices" />
         <div className="mb-6 flex items-center gap-2 text-xs text-[var(--ink-faint)]">
-          <Link href={`/devices?brand=${chipset.brand.slug}`} className="hover:text-[var(--signal)]">
+          <Link href="/devices" className="hover:text-[var(--signal)]">
             {chipset.brand.name}
           </Link>
           <span>/</span>

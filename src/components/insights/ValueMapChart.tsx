@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useMemo, useState } from "react";
 import { BRAND_CHART_COLORS, BRAND_CHART_ORDER } from "@/lib/brandChartColors";
+import ChartVerdict, { type Finding } from "./ChartVerdict";
 
 export type ValuePoint = {
   slug: string;
@@ -42,9 +43,13 @@ type View = "map" | "ranking";
 
 export default function ValueMapChart({ points }: { points: ValuePoint[] }) {
   const [brand, setBrand] = useState<string>("all");
-  const [view, setView] = useState<View>("map");
+  // The ranking is a row of labelled bars; the map is a scatter that has to
+  // be cross-referenced against a numbered list. The bars answer "which is
+  // better value" instantly, so they lead and the map is the opt-in detail.
+  const [view, setView] = useState<View>("ranking");
   const [showTable, setShowTable] = useState(false);
   const [hovered, setHovered] = useState<string | null>(null);
+  const [tip, setTip] = useState<{ x: number; y: number; slug: string } | null>(null);
 
   const brandsPresent = BRAND_CHART_ORDER.filter((b) => points.some((p) => p.brandSlug === b));
 
@@ -78,6 +83,69 @@ export default function ValueMapChart({ points }: { points: ValuePoint[] }) {
     };
   }, [shown]);
 
+  // The answer the chart is being asked for, derived from `shown` so it always
+  // matches what is on screen — including after a brand filter.
+  const verdict = useMemo(() => {
+    if (shown.length === 0) return { findings: [] as Finding[], note: undefined as string | undefined };
+
+    const bestValue = shown[0]; // already sorted by score-per-euro
+    const fastest = shown.reduce((a, b) => (b.score > a.score ? b : a));
+    const cheapest = shown.reduce((a, b) => (b.priceEur < a.priceEur ? b : a));
+    const perEuro = (p: ValuePoint) => Math.round(p.score / p.priceEur);
+
+    const findings: Finding[] = [
+      {
+        label: "Best value",
+        headline: bestValue.name,
+        detail: `${perEuro(bestValue)} pts per € · €${bestValue.priceEur.toLocaleString()}`,
+        color: BRAND_CHART_COLORS[bestValue.brandSlug as (typeof BRAND_CHART_ORDER)[number]],
+      },
+      {
+        label: "Fastest",
+        headline: fastest.name,
+        detail: `${fastest.score.toLocaleString()} pts · €${fastest.priceEur.toLocaleString()}`,
+        color: BRAND_CHART_COLORS[fastest.brandSlug as (typeof BRAND_CHART_ORDER)[number]],
+      },
+      {
+        label: "Cheapest",
+        headline: cheapest.name,
+        detail: `€${cheapest.priceEur.toLocaleString()} · ${cheapest.score.toLocaleString()} pts`,
+        color: BRAND_CHART_COLORS[cheapest.brandSlug as (typeof BRAND_CHART_ORDER)[number]],
+      },
+    ];
+
+    // Naming a single "winner" would be wrong here: the two questions have
+    // different answers whenever the fastest phone is not the best value.
+    const note =
+      fastest.slug === bestValue.slug
+        ? `${bestValue.name} is both the fastest and the best value in this selection.`
+        : `Two different answers: ${fastest.name} tests fastest, but ${bestValue.name} returns ${Math.round(
+            (perEuro(bestValue) / perEuro(fastest) - 1) * 100,
+          )}% more points per euro. Pick by which of the two matters for the order.`;
+
+    // The one comparison that makes the whole chart click: pay this much
+    // more, get this much more — and notice the two do not keep pace.
+    const priceRatio = fastest.priceEur / bestValue.priceEur;
+    const scoreRatio = fastest.score / bestValue.score;
+    const example =
+      fastest.slug === bestValue.slug ? (
+        <>
+          {bestValue.name} wins on both counts here — nothing else is both faster and cheaper.
+        </>
+      ) : (
+        <>
+          The <strong>{fastest.name}</strong> costs{" "}
+          <strong>{priceRatio.toFixed(1)}× more</strong> than the{" "}
+          <strong>{bestValue.name}</strong> (€{fastest.priceEur.toLocaleString()} vs €
+          {bestValue.priceEur.toLocaleString()}) but is only{" "}
+          <strong>{scoreRatio.toFixed(1)}× faster</strong>. Paying more buys speed, just never
+          in proportion — which is what every dot below is showing.
+        </>
+      );
+
+    return { findings, note, example };
+  }, [shown]);
+
   if (points.length === 0) {
     return (
       <p className="text-sm text-[var(--ink-faint)]">
@@ -91,6 +159,8 @@ export default function ValueMapChart({ points }: { points: ValuePoint[] }) {
 
   return (
     <div>
+      <ChartVerdict findings={verdict.findings} note={verdict.note} example={verdict.example} />
+
       {/* controls */}
       <div className="mb-4 flex flex-wrap items-center justify-between gap-2">
         <div className="flex flex-wrap gap-1.5">
@@ -116,7 +186,7 @@ export default function ValueMapChart({ points }: { points: ValuePoint[] }) {
 
       {view === "map" && geometry && (
         <div className="flex flex-col gap-4 lg:flex-row">
-          <div className="min-w-0 flex-1">
+          <div className="relative min-w-0 flex-1">
             <svg
               viewBox={`0 0 ${WIDTH} ${HEIGHT}`}
               className="w-full"
@@ -171,6 +241,11 @@ export default function ValueMapChart({ points }: { points: ValuePoint[] }) {
                   ↑ Geekbench 6 multi-core
                 </text>
 
+                {/* Says out loud what the geometry means, in the corner it means it. */}
+                <text x={6} y={14} className="fill-[var(--signal)] text-[10px] font-bold">
+                  ↖ cheaper and faster = better value
+                </text>
+
                 {shown.map((p) => {
                   const cx = ((p.priceEur - geometry.xMin) / (geometry.xMax - geometry.xMin)) * geometry.plotW;
                   const cy =
@@ -179,8 +254,17 @@ export default function ValueMapChart({ points }: { points: ValuePoint[] }) {
                   return (
                     <g
                       key={p.slug}
-                      onMouseEnter={() => setHovered(p.slug)}
-                      onMouseLeave={() => setHovered(null)}
+                      onMouseEnter={(e) => {
+                        setHovered(p.slug);
+                        const rect = e.currentTarget.ownerSVGElement?.getBoundingClientRect();
+                        if (!rect) return;
+                        const scale = rect.width / WIDTH;
+                        setTip({ x: (PAD_LEFT + cx) * scale, y: (PAD_TOP + cy) * scale, slug: p.slug });
+                      }}
+                      onMouseLeave={() => {
+                        setHovered(null);
+                        setTip(null);
+                      }}
                       className="cursor-pointer"
                     >
                       <circle cx={cx} cy={cy} r={isHot ? 13 : 10} fill="var(--paper)" />
@@ -200,6 +284,28 @@ export default function ValueMapChart({ points }: { points: ValuePoint[] }) {
                 })}
               </g>
             </svg>
+
+            {tip &&
+              (() => {
+                const p = shown.find((d) => d.slug === tip.slug);
+                if (!p) return null;
+                return (
+                  <div
+                    className="pointer-events-none absolute z-10 -translate-x-1/2 -translate-y-full rounded-lg border border-[var(--line)] bg-white px-2.5 py-1.5 shadow-lg"
+                    style={{ left: tip.x, top: tip.y - 14 }}
+                  >
+                    <p className="text-[11.5px] font-bold text-[var(--ink)]">
+                      {p.rank}. {p.name}
+                    </p>
+                    <p className="spec-value mt-0.5 whitespace-nowrap text-[10.5px] text-[var(--ink-soft)]">
+                      €{p.priceEur.toLocaleString()} · {p.score.toLocaleString()} pts ·{" "}
+                      <span className="font-bold text-[var(--signal)]">
+                        {Math.round(p.score / p.priceEur)} pts/€
+                      </span>
+                    </p>
+                  </div>
+                );
+              })()}
           </div>
 
           {/* numbered key beside the chart — the point of the numbers */}

@@ -483,6 +483,21 @@ model DemandForecast {
   @@unique([productId, periodStart, periodEnd])
 }
 
+/// One row per ticker item shown in the header's market bar (an FX pair or a
+/// stock quote). Refreshed on a server-side interval (see instrumentation.ts)
+/// every few minutes from a named external source — never written by a
+/// visitor's own browser, so every viewer sees the same numbers.
+model MarketPrice {
+  id             String   @id @default(cuid())
+  key            String   @unique
+  label          String
+  value          Float
+  unit           String
+  changePercent  Float?
+  sourceName     String
+  updatedAt      DateTime @updatedAt
+}
+
 model Bookmark {
   id        String   @id @default(cuid())
   user      User     @relation(fields: [userId], references: [id])

@@ -5,7 +5,6 @@ export type DeviceCardData = {
   slug: string;
   name: string;
   category: string;
-  releaseDate: Date;
   imageUrl: string | null;
   chipset: { name: string; slug: string; gradientFrom: string; gradientTo: string };
 };

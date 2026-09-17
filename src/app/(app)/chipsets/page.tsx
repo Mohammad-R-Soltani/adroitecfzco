@@ -91,11 +91,13 @@ export default async function ChipsetsPage() {
         </div>
 
         <section className="surface-card mt-6 rounded-2xl border border-[var(--line)] p-5 shadow-sm">
-          <h2 className="font-display text-lg font-semibold text-[var(--ink)]">Where the market is moving</h2>
-          <p className="mt-1 text-sm text-[var(--ink-soft)]">
-            Devices released per year, broken down by chipset series — which specific chip
-            lines are gaining ground, counted directly from every device in the catalog, not
-            an estimate.
+          <h2 className="font-display text-lg font-semibold text-[var(--ink)]">
+            Which chip lines are gaining ground
+          </h2>
+          <p className="mt-1 max-w-2xl text-sm text-[var(--ink-soft)]">
+            Compares chipset lines by how many devices launched on each, year by year. One bar
+            is one year; the coloured slices are the chip lines that made up that year, so a
+            slice growing taller each year is a line taking over.
           </p>
           <div className="mt-5">
             <MarketTrendChart points={trendPoints} />
@@ -107,9 +109,10 @@ export default async function ChipsetsPage() {
             What each chip is actually good at
           </h2>
           <p className="mt-1 max-w-2xl text-sm text-[var(--ink-soft)]">
-            Every filled cell is a claim a named outlet published about that chip in that
-            workload — tap one to read it and follow the source. A blank cell means nothing
-            credible was published, not that the chip is weak there.
+            Compares chipsets against each other in eight separate workloads — AI, gaming,
+            camera and so on — rather than on one overall score. Each filled cell is a claim a
+            named outlet published about that chip in that workload; tap one to read it and
+            follow the source.
           </p>
           <div className="mt-5">
             <DomainMatrix chipsets={domainChipsets} />

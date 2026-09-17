@@ -4,6 +4,7 @@ import {
   getFamilyDemand,
   getForecasts,
   getPriceAndDemand,
+  getLossMakingProducts,
 } from "@/lib/salesDal";
 import DemandTrendChart from "@/components/sales/DemandTrendChart";
 import PriceDemandChart from "@/components/sales/PriceDemandChart";
@@ -11,12 +12,15 @@ import PriceDemandChart from "@/components/sales/PriceDemandChart";
 export default async function SalesDashboard() {
   await requireSalesAccess();
 
-  const [overview, families, forecasts, priceDemand] = await Promise.all([
+  const [overview, families, forecasts, priceDemand, lossMakers] = await Promise.all([
     getSalesOverview(),
     getFamilyDemand(14),
     getForecasts(15),
     getPriceAndDemand(3, 15),
+    getLossMakingProducts(),
   ]);
+
+  const totalLoss = lossMakers.reduce((sum, p) => sum + p.totalLoss, 0);
 
   return (
     <main className="min-h-dvh px-4 pb-16 pt-20 sm:px-6">
@@ -60,6 +64,53 @@ export default async function SalesDashboard() {
           <div className="mt-5">
             <PriceDemandChart rows={priceDemand} />
           </div>
+
+          {lossMakers.length > 0 && (
+            <div className="mt-5 rounded-xl border border-[#e34948]/30 bg-[#e34948]/[0.04] p-4">
+              <p className="text-[11px] font-bold uppercase tracking-wide text-[#b3251f]">
+                Sold below cost — {lossMakers.length} product{lossMakers.length === 1 ? "" : "s"}
+              </p>
+              <p className="mt-1.5 text-[12.5px] leading-relaxed text-[var(--ink-soft)]">
+                These never reach the chart above, which ranks by units sold and stops at fifteen
+                rows. Together they gave up{" "}
+                <strong className="text-[var(--ink)]">
+                  {totalLoss.toLocaleString(undefined, { maximumFractionDigits: 0 })} AED
+                </strong>{" "}
+                of gross margin across every unit shipped.
+              </p>
+
+              <div className="mt-3 overflow-x-auto rounded-lg border border-[var(--line)] bg-white">
+                <table className="w-full min-w-[520px] text-left text-[12px]">
+                  <thead className="bg-[var(--mist)] text-[10.5px] font-bold uppercase tracking-wide text-[var(--ink-faint)]">
+                    <tr>
+                      <th className="px-3 py-2">Product</th>
+                      <th className="px-3 py-2 text-right">Sale</th>
+                      <th className="px-3 py-2 text-right">Cost</th>
+                      <th className="px-3 py-2 text-right">Loss / unit</th>
+                      <th className="px-3 py-2 text-right">Units</th>
+                      <th className="px-3 py-2 text-right">Total given up</th>
+                    </tr>
+                  </thead>
+                  <tbody className="[font-variant-numeric:tabular-nums]">
+                    {lossMakers.map((p) => (
+                      <tr key={p.name} className="border-t border-[var(--line)]">
+                        <td className="px-3 py-2 font-medium text-[var(--ink)]">{p.name}</td>
+                        <td className="px-3 py-2 text-right text-[var(--ink-soft)]">{p.saleRate.toFixed(0)}</td>
+                        <td className="px-3 py-2 text-right text-[var(--ink-soft)]">{p.costPerUnitSold.toFixed(0)}</td>
+                        <td className="px-3 py-2 text-right font-semibold text-[#b3251f]">
+                          −{p.lossPerUnit.toFixed(2)}
+                        </td>
+                        <td className="px-3 py-2 text-right text-[var(--ink-soft)]">{p.unitsSold.toLocaleString()}</td>
+                        <td className="px-3 py-2 text-right font-semibold text-[#b3251f]">
+                          −{p.totalLoss.toLocaleString(undefined, { maximumFractionDigits: 0 })}
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          )}
         </section>
 
         <section className="surface-card mt-6 rounded-2xl border border-[var(--line)] p-5 shadow-sm">

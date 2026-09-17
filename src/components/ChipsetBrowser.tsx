@@ -3,13 +3,14 @@
 import { useMemo, useState } from "react";
 import { motion } from "framer-motion";
 import ChipsetListCard, { type ListChipset } from "./ChipsetListCard";
+import { BRAND_CHART_COLORS } from "@/lib/brandChartColors";
 
 const BRAND_FILTERS = ["All", "Apple", "Xiaomi", "Samsung"] as const;
 const BRAND_PILL_COLOR: Record<(typeof BRAND_FILTERS)[number], string> = {
   All: "var(--ink)",
-  Apple: "var(--signal)",
-  Xiaomi: "var(--ember)",
-  Samsung: "#1428A0",
+  Apple: BRAND_CHART_COLORS.apple,
+  Xiaomi: BRAND_CHART_COLORS.xiaomi,
+  Samsung: BRAND_CHART_COLORS.samsung,
 };
 
 type RealBenchmark = { value: number; deviceName: string; sourceName: string; sourceUrl: string };

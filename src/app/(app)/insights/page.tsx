@@ -80,9 +80,10 @@ export default async function InsightsPage() {
             How much speed per euro?
           </h2>
           <p className="mt-1 max-w-2xl text-sm text-[var(--ink-soft)]">
-            Each numbered dot is one device: how much it cost at launch, against how fast it
-            tested. Dots higher up are faster; dots further left are cheaper — so the best value
-            sits top-left. The list beside the chart ranks them.
+            Compares devices on one thing: benchmark points per euro of launch price. Each
+            numbered dot is one device — higher means faster, further left means cheaper, so the
+            best value sits top-left. The numbers on the dots are the value ranking, and the
+            list beside the chart repeats it in order.
           </p>
           <p className="mt-1.5 text-[11.5px] text-[var(--ink-faint)]">
             Launch RRP as listed by GSMArena, not today&apos;s trade price — use for positioning,
@@ -98,8 +99,9 @@ export default async function InsightsPage() {
             Is the new model really faster?
           </h2>
           <p className="mt-1 max-w-2xl text-sm text-[var(--ink-soft)]">
-            Each row compares one phone with the model it replaced, using the same benchmark on
-            both. The percentage is how much faster the newer one is.
+            Compares each phone with the one model it replaced — never with a rival — using the
+            same benchmark on both. The percentage is how much faster the newer one is, and the
+            verdict column says whether that gap is one a user would actually notice.
           </p>
           <p className="mt-1.5 text-[11.5px] text-[var(--ink-faint)]">
             Geekbench 6 multi-core, as tested by GSMArena. Geekbench 5 scores are never compared

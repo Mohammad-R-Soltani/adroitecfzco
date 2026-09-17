@@ -5,6 +5,7 @@ import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
 import { logout } from "@/app/actions";
 import Logomark from "./Logomark";
+import MarketTicker from "./MarketTicker";
 
 const NAV_ITEMS = [
   { href: "/", label: "Feed", hint: "Newest chipsets", icon: "feed", color: "#0071e3" },
@@ -51,8 +52,8 @@ export default function NavBar({
 
   return (
     <>
-      <header className="fixed inset-x-0 top-0 z-30 flex h-14 items-center justify-between border-b border-[var(--line)] bg-white/80 px-4 backdrop-blur-xl sm:px-6">
-        <div className="flex items-center gap-3">
+      <header className="fixed inset-x-0 top-0 z-30 flex h-14 items-center gap-3 border-b border-[var(--line)] bg-white/80 px-4 backdrop-blur-xl sm:px-6">
+        <div className="flex shrink-0 items-center gap-3">
           <button
             type="button"
             onClick={() => setOpen(true)}
@@ -69,9 +70,11 @@ export default function NavBar({
           </Link>
         </div>
 
+        <MarketTicker />
+
         <Link
           href="/me"
-          className="flex h-8 w-8 items-center justify-center rounded-full bg-gradient-to-br from-[var(--signal)] to-[var(--glow)] text-xs font-bold text-white transition hover:opacity-90"
+          className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-[var(--signal)] to-[var(--glow)] text-xs font-bold text-white transition hover:opacity-90"
         >
           {displayName.charAt(0).toUpperCase()}
         </Link>

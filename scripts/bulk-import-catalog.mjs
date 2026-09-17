@@ -1,4 +1,5 @@
 import "dotenv/config";
+import { pathToFileURL } from "node:url";
 import { PrismaClient } from "@prisma/client";
 import { PrismaPg } from "@prisma/adapter-pg";
 import {
@@ -38,14 +39,14 @@ function slugify(name) {
     .replace(/^-|-$/g, "");
 }
 
-function pick(section, ...keys) {
+export function pick(section, ...keys) {
   if (!section) return null;
   for (const k of keys) if (section[k]) return section[k];
   return null;
 }
 
 /** Maps GSMArena's parsed sections onto our DeviceSpec columns. */
-function mapToSpec(sections, sourceUrl) {
+export function mapToSpec(sections, sourceUrl) {
   const network = sections["Network"];
   const launch = sections["Launch"];
   const body = sections["Body"];
@@ -204,7 +205,7 @@ async function findOrCreateChipset(brand, chipsetRaw, spec) {
 
 const BRAND_GRADIENTS = Object.fromEntries(BRANDS.map((b) => [b.slug, b.gradient]));
 
-async function importDevice(brand, stub) {
+export async function importDevice(brand, stub) {
   // Resumable: a device already imported from this exact page is left alone,
   // so the run can be stopped and restarted without re-fetching everything.
   // GSMArena rate-limits hard, and re-fetching is what triggers it.
@@ -348,4 +349,11 @@ async function main() {
   await prisma.$disconnect();
 }
 
-await main();
+// Guarded so another script can import `importDevice` from this module
+// (e.g. targeted-benchmark-backfill.mjs) without also triggering a full
+// brand crawl as an import side effect. A manual file:// string comparison
+// broke on Windows, which needs a third slash before the drive letter
+// ("file:///C:/...") that a naive template string does not add —
+// pathToFileURL is the platform-correct way to build that comparison.
+const isMain = process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href;
+if (isMain) await main();

@@ -164,6 +164,23 @@ body {
   animation: mesh-drift 14s ease-in-out infinite;
 }
 
+/* The header market ticker. Two identical copies of the row sit side by
+   side; the strip starts shifted a full copy-width left and eases back to
+   0, so content visibly travels left-to-right — each item exits past the
+   right edge with the next one already waiting to enter from the left, and
+   the loop point is invisible since both copies are identical. Defined here
+   rather than in a component-scoped <style jsx> block so a keyframe-only
+   change is guaranteed to hot-reload instead of risking a stale animation
+   name across a Fast Refresh. */
+@keyframes ticker-scroll {
+  from {
+    transform: translateX(-50%);
+  }
+  to {
+    transform: translateX(0);
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
   .drawer-panel,
   .drawer-scrim,
